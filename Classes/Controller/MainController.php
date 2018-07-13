@@ -50,6 +50,6 @@ class MainController extends ActionController {
 
 
     public function indexAction() {
-        \TYPO3\CMS\Extbase\Utility\DebuggerUtility::debug($this->languageService, 'LangService', 'LangService');
+        \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($this->languageService, 'LangService', 'LangService');
     }
 }
