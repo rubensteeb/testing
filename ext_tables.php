@@ -26,7 +26,7 @@ if(TYPO3_MODE == 'BE') {
             'labels' => 'LLL:EXT:' . $_EXTKEY . 'Resources/Private/Language/locallang_main_module.xlf',
         )
     );
-    \TYPO3\CMS\Core\Utiltiy\ExtensionUtility::registerModule(
+    \TYPO3\CMS\Core\Utility\ExtensionUtility::registerModule(
         'RubenSteeb.TestModuleRelations',
         'mainModule',
         'forms',
