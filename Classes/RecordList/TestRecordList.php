@@ -48,7 +48,7 @@ class TestRecordList extends DatabaseRecordList {
                      && $GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField']
                      && $table !== 'pages_languages_overlay';
         $tableCollapsed = (bool)$this->tablesCollapsed[$table];
-        $this->spaceIcon = '<span class="btn btn-default disabled">' . $this->iconFactory->getIcon('empty-empty', Icon::SIZES_SMALL)->render() . '</span>';
+        $this->spaceIcon = '<span class="btn btn-default disabled">' . $this->iconFactory->getIcon('empty-empty', Icon::SIZE_SMALL)->render() . '</span>';
 
         $this->fieldArray = [];
 
