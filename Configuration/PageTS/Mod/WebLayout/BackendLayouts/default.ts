@@ -1,0 +1,1 @@
+<INCLUDE_TYPOSCRIPT: source="DIR:EXT:test_model_relation/Configuration/PageTS/Mod/WebLayout/BackendLayouts" extensions="ts">

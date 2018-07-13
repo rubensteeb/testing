@@ -1,0 +1,21 @@
+{
+	"name": "rubensteeb/testing",
+	"type": "typo3-cms-extension",
+	"description": "Test Extension for Testing Different Things",
+	"authors": {
+		"name": "Ruben Steeb",
+		"email": "ruben.steeb@gmail.com",
+		"role": "Developer"
+	},
+	"autoload": {
+		"psr-4": {
+			"RubenSteeb\\TestModelRelations\\": "Classes"
+		}
+	},
+	"extra": {
+		"typo3/cms": {
+			"cms-package-dir": "{$vendor-dir}typo3/cms",
+			"web-dir": "web"
+		}
+	}
+}

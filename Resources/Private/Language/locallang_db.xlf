@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.0">
+        <file source-language="en" datatype="plaintext" original="messages" date="2017-11-27T17:38:32Z"
+                  product-name="faro_formcms">
+                <header/>
+                <body>
+                      		
+                        <trans-unit id="tx_faro_formcms_domain_model_form">
+                                <source>Faro Form</source>
+                        </trans-unit>
+                        <trans-unit id="tx_faro_formcms_domain_model_form.name">
+                                <source>Form Name</source>
+                        </trans-unit>
+                        <trans-unit id="tx_faro_formcms_domain_model_form.description">
+                                <source>Form Description</source>
+                        </trans-unit>
+                        <trans-unit id="tx_faro_formcms_domain_model_form.action">
+                                <source>Form Action</source>
+                        </trans-unit>
+						<trans-unit id="tx_faro_formcms_domain_model_form.method">
+                                <source>Form Method</source>
+                        </trans-unit>
+						<trans-unit id="tx_faro_formcms_domain_model_field">
+							<source>Field</source>
+						</trans-unit>
+						<trans-unit id="tx_faro_formcms_domain_model_list">
+							<source>Select List for Fields</source>
+						</trans-unit>
+						<trans-unit id="tx_faro_formcms_domain_model_list_item">
+							<source>Items for Fields Select Lists</source>
+						</trans-unit>
+						
+                </body>
+        </file>
+</xliff>
