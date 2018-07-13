@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+namespace RubenSteeb\TestModuleRelations\Controller;
 
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
@@ -35,6 +36,6 @@ class MainController extends ActionController {
     }
 
     public function indexAction() {
-        
+
     }
 }
