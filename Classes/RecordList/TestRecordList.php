@@ -26,6 +26,7 @@ class TestRecordList extends DatabaseRecordList {
     }
 
     public function getTable($tableName, $id, $fields ='') {
+        \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($this, 'this');
         $warningText = $this->languageService->includeLLFile('EXT:backend/Resources/Private/Language/locallang_layout.xlf');
         \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($warningText, 'Delete Warning Text');
         return 'Output Of the Record List';

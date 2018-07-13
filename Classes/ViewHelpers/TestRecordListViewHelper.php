@@ -108,8 +108,12 @@ class TestRecordListViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Be\AbstractB
         $this->getPageRenderer()->loadRequireJsModule('TYPO3/CMS/Recordlist/Recordlist');
 
         $pageinfo = BackendUtility::readPageAccess(GeneralUtility::_GP('id'), $GLOBALS['BE_USER']->getPagePermsClause(1));
-        /** @var $dblist \TYPO3\CMS\Recordlist\RecordList\DatabaseRecordList */
-        $dblist = GeneralUtility::makeInstance(\RubenSteeb\Testing\RecordList\TestRecordList::class);
+
+        $objectManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Objects\ObjectManager::class);        
+
+
+        /** @var $dblist \TYPO3\CMS\Recordlist\RecordList\DatabaseRecordList */        
+        $dblist = $objectManager->get(\RubenSteeb\Testing\RecordList\TestRecordList::class);
         $dblist->pageRow = $pageinfo;
         if ($readOnly === false) {
             $dblist->calcPerms = $GLOBALS['BE_USER']->calcPerms($pageinfo);

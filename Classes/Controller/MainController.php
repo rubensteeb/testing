@@ -16,12 +16,7 @@ class MainController extends ActionController {
      * @var string
      */
     protected $defaultViewObjectName = BackendTemplateView::class;
-
-    /**
-     * @var \TYPO3\CMS\Lang\LanguageService
-     */
-    protected $languageService;
-
+  
     /**
      * BackendTemplateContainer
      * 
@@ -29,12 +24,6 @@ class MainController extends ActionController {
      */
     protected $view;
 
-    /**
-     * @param \TYPO3\CMS\Lang\LanguageService
-     */
-    public function injectLanguageService(\TYPO3\CMS\Lang\LanguageService $languageService) {
-        $this->languageService = $languageService;
-    }
     /**
      * set up the doc header properly
      * 
@@ -48,8 +37,8 @@ class MainController extends ActionController {
 		}
     }
 
-
+    
     public function indexAction() {
-        \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($this->languageService, 'LangService', 'LangService');
+
     }
 }
