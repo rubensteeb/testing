@@ -19,7 +19,7 @@ if(TYPO3_MODE == 'BE') {
         'mainModule',
         '',
         '',
-        [],
+        array(),
         array(
             'access' => 'user, group',
             'icon' => 'EXT:form/Resources/Public/Icons/module-form.svg',
