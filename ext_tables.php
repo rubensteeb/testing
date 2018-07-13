@@ -32,7 +32,7 @@ if(TYPO3_MODE == 'BE') {
         'forms',
         'top',
         [
-            'MainController' => 'index, show, create, delete'
+            'Main' => 'index, show, create, delete'
         ],
         [
             'access' => 'user, group',
