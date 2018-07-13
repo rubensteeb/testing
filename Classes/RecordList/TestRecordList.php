@@ -8,7 +8,7 @@ class TestRecordList extends DatabaseRecordList {
 
     public function __construct() {
         parent::__construct();
-        $this->getLanguageService()->includeLLFile('EXT:Backend/Resources/Private/Language/locallang_layout.xlf');
+        $this->getLanguageService()->includeLLFile('EXT:backend/Resources/Private/Language/locallang_layout.xlf');
     }
 
     public function getTable($tableName, $id, $fields ='') {
