@@ -14,7 +14,7 @@ class TestRecordList extends DatabaseRecordList {
     protected $languageService;
 
     /**
-     * @param languageService $languageService
+     * @param LanguageService $languageService
      */
     public function injectLanguageService(LanguageService $languageService) {
         $this->languageService = $languageService;
