@@ -14,7 +14,7 @@ if(TYPO3_MODE == 'BE') {
 		}
         $TBE_MODULES = $temp_TBE_MODULES; 
     }
-    \TYPO3\CMS\Core\Utility\ExtensionUtility::registerModule(
+    \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
         'RubenSteeb.TestModuleRelations',
         'mainModule',
         '',
@@ -26,7 +26,7 @@ if(TYPO3_MODE == 'BE') {
             'labels' => 'LLL:EXT:' . $_EXTKEY . 'Resources/Private/Language/locallang_main_module.xlf',
         )
     );
-    \TYPO3\CMS\Core\Utility\ExtensionUtility::registerModule(
+    \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
         'RubenSteeb.TestModuleRelations',
         'mainModule',
         'forms',
