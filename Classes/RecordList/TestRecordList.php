@@ -7,7 +7,7 @@ class TestRecordList extends DatabaseRecordList {
 
 
     public function getTable($tableName, $id, $fields ='') {
-        \TYPO3\CMS\Extbase\Utility\DebuggerUtility::debug($GLOBALS, 'GLOBALS');
+        \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($GLOBALS, 'GLOBALS');
         return 'Output Of the Record List';
     }
 }
