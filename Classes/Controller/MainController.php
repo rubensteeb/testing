@@ -33,6 +33,9 @@ class MainController extends ActionController {
     protected function initializeView(ViewInterface $view) {
         /** @var BackendTemplateView */
         parent::initalizeView($view);
+        if ($view instanceof BackendTemplateView) {
+			$view->getModuleTemplate()->getPageRenderer()->loadRequireJsModule('TYPO3/CMS/Backend/Modal');			
+		}
     }
 
     public function indexAction() {
