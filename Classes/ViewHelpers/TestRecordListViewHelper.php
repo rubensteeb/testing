@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\Fluid\ViewHelpers\Be;
+namespace RubenSteeb\Testing\ViewHelpers;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -41,7 +41,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * Clicking on a username will open the TYPO3 info popup for the respective record
  * </output>
  */
-class TableListViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Be\AbstractBackendViewHelper
+class TestRecordListViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Be\AbstractBackendViewHelper
 {
     /**
      * As this ViewHelper renders HTML, the output must not be escaped.
