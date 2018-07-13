@@ -1,7 +1,7 @@
 <?php
 namespace RubenSteeb\Testing\RecordList;
 
-use TYPO3\CMS\RecordList\DatabaseRecordList;
+use TYPO3\CMS\RecordList\RecordList\DatabaseRecordList;
 
 class TestRecordList extends DatabaseRecordList {
 
