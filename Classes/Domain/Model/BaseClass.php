@@ -1,7 +1,7 @@
 <?php
-namespace RubenSteeb\TestModelRelations\Domain\Model;
+namespace RubenSteeb\Testing\Domain\Model;
 
-use RubenSteeb\TestModelRelations\Domain\Model\SuperClass;
+use RubenSteeb\Testing\Domain\Model\SuperClass;
 
 class BaseClass extends SuperClass
 {

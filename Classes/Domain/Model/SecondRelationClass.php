@@ -1,7 +1,7 @@
 <?php
-namespace RubenSteeb\TestModelRelations\Domain\Model;
+namespace RubenSteeb\Testing\Domain\Model;
 
-use RubenSteeb\TestModelRelations\Domain\Model\RelationClass;
+use RubenSteeb\Testing\Domain\Model\RelationClass;
 
 class SecondRelationClass extends RelationClass
 {

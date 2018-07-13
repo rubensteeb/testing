@@ -1,5 +1,5 @@
 <?php
-namespace RubenSteeb\TestModelRelations\Controller;
+namespace RubenSteeb\Testing\Controller;
 
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use RubenSteeb\TestModelRelations\Domain\Repository\SuperClassRepository;

@@ -1,5 +1,5 @@
 <?php
-namespace RubenSteeb\TestModelRelations\Domain\Model;
+namespace RubenSteeb\Testing\Domain\Model;
 
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 

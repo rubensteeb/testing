@@ -1,5 +1,5 @@
 <?php
-namespace RubenSteeb\TestModelRelations\Domain\Repository;
+namespace RubenSteeb\Testing\Domain\Repository;
 
 use TYPO3\CMS\Extbase\Persistence\Repository;
 

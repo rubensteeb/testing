@@ -2,12 +2,12 @@
 defined('TYPO3_MODE') or die();
 
 if(TYPO3_MODE == 'BE') {
-    if(!isset($TBE_MODULES['TestModelRelationsMainmodule'])) {
+    if(!isset($TBE_MODULES['TestingMainmodule'])) {
         $temp_TBE_MODULES = array();
 		foreach ($TBE_MODULES as $key => $val) {
 			if ($key == 'web') {
 				$temp_TBE_MODULES[$key] = $val;
-				$temp_TBE_MODULES['TestModelRelationsMainmodule'] = '';
+				$temp_TBE_MODULES['TestingMainmodule'] = '';
 			} else {
 				$temp_TBE_MODULES[$key] = $val;
 			}
@@ -15,7 +15,7 @@ if(TYPO3_MODE == 'BE') {
         $TBE_MODULES = $temp_TBE_MODULES; 
     }
     \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
-        'RubenSteeb.TestModuleRelations',
+        'RubenSteeb.Testing',
         'mainModule',
         '',
         '',
@@ -27,7 +27,7 @@ if(TYPO3_MODE == 'BE') {
         )
     );
     \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
-        'RubenSteeb.TestModuleRelations',
+        'RubenSteeb.Testing',
         'mainModule',
         'forms',
         'top',

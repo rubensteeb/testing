@@ -9,7 +9,7 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"RubenSteeb\\TestModelRelations\\": "/web/typo3conf/ext/testing/Classes"
+			"RubenSteeb\\Testing\\": "Classes"
 		}
 	},
 	"extra": {
