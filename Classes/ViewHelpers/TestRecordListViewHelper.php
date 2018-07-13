@@ -109,7 +109,7 @@ class TestRecordListViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Be\AbstractB
 
         $pageinfo = BackendUtility::readPageAccess(GeneralUtility::_GP('id'), $GLOBALS['BE_USER']->getPagePermsClause(1));
 
-        $objectManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Objects\ObjectManager::class);        
+        $objectManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);        
 
 
         /** @var $dblist \TYPO3\CMS\Recordlist\RecordList\DatabaseRecordList */        
