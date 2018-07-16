@@ -426,6 +426,7 @@ class TestRecordList extends DatabaseRecordList {
             $iconImg = '<span ' . $toolTip . ' ' . $additionalStyle . '>'
                 . $this->iconFactory->getIconForRecord($table, $row, Icon::SIZE_SMALL)->render()
                 . '</span>';
+            DebuggerUtility::vad_dump($this->clickMenuEnabled, 'Clickmenuenabled');
             $theIcon = $this->clickMenuEnabled ? BackendUtility::wrapClickMenuOnIcon($iconImg, $table, $row['uid']) : $iconImg;
             // Preparing and getting the data-array
             $theData = [];
