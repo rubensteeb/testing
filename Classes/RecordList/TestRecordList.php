@@ -428,7 +428,8 @@ class TestRecordList extends DatabaseRecordList {
         public function setTotalItems(string $table, int $pageId, array $constraints)
         {
             $queryParameters = $this->buildQueryParameters($table, $pageId, ['*'], $constraints, false);
-            
+            DebuggerUtility::var_dump($queryParameters, 'queryParams');
+
             $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
                 ->getQueryBuilderForTable($queryParameters['table']);
             $queryBuilder->getRestrictions()
