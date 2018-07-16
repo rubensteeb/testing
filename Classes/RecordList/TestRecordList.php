@@ -262,7 +262,37 @@ class TestRecordList extends DatabaseRecordList {
                 $tableHeader .= $theData[$titleCol] . $collapseIcon;
             }
             // Render table rows only if in multi table view or if in single table view
-           
+           $rowOutpu = '';
+           $accRows = [];
+
+           $this->currentTable = [];
+           $currentIdList = [];
+           $doSort = $GLOBALS['TCA'][$table]['ctrl']['sortby'] && !$this->sortField;
+           $prevUid = 0;
+           $prevPrevUid = 0;
+
+           while ($row = $queryResult->fetch()) {
+               if (!$this->isRowListingConditionFulfilled($table, $row)) {
+                   continue;
+               }
+               BackendUtility::workspaceOL($table, $row, $backendUser->workspace, true);
+               if (is_array($row)) {
+                   $accRows[] = $row;
+                   $currentIdList[] = $row['uid'];
+                   if ($doSort) {
+                      if ($prevUid) {
+                          $this->currentTable['prev'][$row['uid']] = $prevPrevUid;
+                          $this->currentTable['next'][$prevUid] = '-' . $row['uid'];
+                          $this->currentTable['prevUid'][$row['uid']] = $prevUid;
+                      }
+                      $prevPrevUid = isset($this->currentTable['prev'][$row['uid']]) ? -$prevUid : $row['pid'];
+                      $prevUid = $row['uid']; 
+                   }
+               }
+           }
+           DebuggerUtility::var_dump($accRows, 'accrows');
+
+
 
             $collapseClass = $tableCollapsed && !$this->table ? 'collapse' : 'collapse in';
             $dataState = $tableCollapsed && !$this->table ? 'collapsed' : 'expanded';
