@@ -295,7 +295,7 @@ class TestRecordList extends DatabaseRecordList {
     // the array keys are eliminated by this as well to facilitate argument unpacking
     // when used with the querybuilder.
     $parameters['where'] = array_unique(array_filter(array_values($parameters['where'])));
-
+    \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($parameters, 'parameters');
     return $parameters;
     }
 
