@@ -389,6 +389,7 @@ class TestRecordList extends DatabaseRecordList {
             if (!is_array($row)) {
                 return '';
             }
+            DebuggerUtility::var_dump($row, 'Row in Render List Row');
             $rowOutput = '';
             $id_orig = null;
             // If in search mode, make sure the preview will show the correct page
