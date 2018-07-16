@@ -428,7 +428,7 @@ class TestRecordList extends DatabaseRecordList {
         public function setTotalItems(string $table, int $pageId, array $constraints)
         {
             $queryParameters = $this->buildQueryParameters($table, $pageId, ['*'], $constraints, false);
-            DebuggerUtility::var_dump($queryParameters, 'queryParams');
+            $queryParameters['where'] = [];
 
             $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
                 ->getQueryBuilderForTable($queryParameters['table']);
@@ -440,8 +440,7 @@ class TestRecordList extends DatabaseRecordList {
                 ->select('*')
                 ->from($queryParameters['table'])
                 ->where(...$queryParameters['where']);                      
-            //CUSTOM DISRESPECT PAGEID
-            $queryBuilder->setParameter('where', '');
+            //CUSTOM DISRESPECT PAGEID            
             DebuggerUtility::var_dump($queryBuilder, 'QueryBuilder in SetTotalItems');
             $this->totalItems = (int)$queryBuilder->count('*')
                 ->execute()
