@@ -390,6 +390,7 @@ class TestRecordList extends DatabaseRecordList {
                 return '';
             }
             DebuggerUtility::var_dump($row, 'Row in Render List Row');
+
             $rowOutput = '';
             $id_orig = null;
             // If in search mode, make sure the preview will show the correct page
@@ -419,6 +420,9 @@ class TestRecordList extends DatabaseRecordList {
             $this->counter++;
             // The icon with link
             $toolTip = BackendUtility::getRecordToolTip($row, $table);
+
+            DebuggerUtility::var_dun($toolTip, 'tooltip');
+
             $additionalStyle = $indent ? ' style="margin-left: ' . $indent . 'px;"' : '';
             $iconImg = '<span ' . $toolTip . ' ' . $additionalStyle . '>'
                 . $this->iconFactory->getIconForRecord($table, $row, Icon::SIZE_SMALL)->render()
@@ -530,7 +534,7 @@ class TestRecordList extends DatabaseRecordList {
                 },
                 $tagAttributes
             );
-    
+            DebuggerUtility::var_dump()
             $rowOutput .= $this->addElement(1, $theIcon, $theData, GeneralUtility::implodeAttributes($tagAttributes, true));
             // Finally, return table row element:
             return $rowOutput;
