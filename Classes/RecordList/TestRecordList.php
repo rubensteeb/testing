@@ -409,7 +409,7 @@ class TestRecordList extends DatabaseRecordList {
             }
         }
         // Return content:
-        DebuggerUtility::var_dump($out, 'out');
+        DebuggerUtility::var_dump($theData, 'theData');
         return $out;
         
 
