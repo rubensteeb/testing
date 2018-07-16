@@ -436,6 +436,7 @@ class TestRecordList extends DatabaseRecordList {
                 ->add(GeneralUtility::makeInstance(DeletedRestriction::class))
                 ->add(GeneralUtility::makeInstance(BackendWorkspaceRestriction::class));
             $queryBuilder
+                ->select(['*'])
                 ->from($queryParameters['table'])
                 ->where(...$queryParameters['where']);                      
             //CUSTOM DISRESPECT PAGEID
