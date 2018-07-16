@@ -450,58 +450,57 @@ class TestRecordList extends DatabaseRecordList {
 
          
     
-        /**
-         * Returns a QueryBuilder configured to select $fields from $table where the pid is restricted
-         * depending on the current searchlevel setting.
-         *
-         * @param string $table Table name
-         * @param int $pageId Page id Only used to build the search constraints, getPageIdConstraint() used for restrictions
-         * @param string[] $additionalConstraints Additional part for where clause
-         * @param string[] $fields Field list to select, * for all
-         * @return \TYPO3\CMS\Core\Database\Query\QueryBuilder
-         */
-        public function getQueryBuilder(
-            string $table,
-            int $pageId,
-            array $additionalConstraints = [],
-            array $fields = ['*']
-        ): QueryBuilder {
-            $queryParameters = $this->buildQueryParameters($table, $pageId, $fields, $additionalConstraints);
-            $queryParameters['where'] = [''];
+      /**
+     * Returns a QueryBuilder configured to select $fields from $table where the pid is restricted
+     * depending on the current searchlevel setting.
+     *
+     * @param string $table Table name
+     * @param int $pageId Page id Only used to build the search constraints, getPageIdConstraint() used for restrictions
+     * @param string[] $additionalConstraints Additional part for where clause
+     * @param string[] $fields Field list to select, * for all
+     * @return \TYPO3\CMS\Core\Database\Query\QueryBuilder
+     */
+    public function getQueryBuilder(
+        string $table,
+        int $pageId,
+        array $additionalConstraints = [],
+        array $fields = ['*']
+    ): QueryBuilder {
+        $queryParameters = $this->buildQueryParameters($table, $pageId, $fields, $additionalConstraints);
 
-            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-                ->getQueryBuilderForTable($queryParameters['table']);
-            $queryBuilder->getRestrictions()
-                ->removeAll()
-                ->add(GeneralUtility::makeInstance(DeletedRestriction::class))
-                ->add(GeneralUtility::makeInstance(BackendWorkspaceRestriction::class));
-            $queryBuilder
-                ->select(...$queryParameters['fields'])
-                ->from($queryParameters['table'])
-                ->where(...$queryParameters['where']);
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable($queryParameters['table']);
+        $queryBuilder->getRestrictions()
+            ->removeAll()
+            ->add(GeneralUtility::makeInstance(DeletedRestriction::class))
+            ->add(GeneralUtility::makeInstance(BackendWorkspaceRestriction::class));
+        $queryBuilder
+            ->select(...$queryParameters['fields'])
+            ->from($queryParameters['table'])
+            ->where(...$queryParameters['where']);
 
-            if (!empty($queryParameters['orderBy'])) {
-                foreach ($queryParameters['orderBy'] as $fieldNameAndSorting) {
-                    list($fieldName, $sorting) = $fieldNameAndSorting;
-                    $queryBuilder->addOrderBy($fieldName, $sorting);
-                }
+        if (!empty($queryParameters['orderBy'])) {
+            foreach ($queryParameters['orderBy'] as $fieldNameAndSorting) {
+                list($fieldName, $sorting) = $fieldNameAndSorting;
+                $queryBuilder->addOrderBy($fieldName, $sorting);
             }
-
-            if (!empty($queryParameters['firstResult'])) {
-                $queryBuilder->setFirstResult((int)$queryParameters['firstResult']);
-            }
-
-            if (!empty($queryParameters['maxResults'])) {
-                $queryBuilder->setMaxResults((int)$queryParameters['maxResults']);
-            }
-
-            if (!empty($queryParameters['groupBy'])) {
-                $queryBuilder->groupBy($queryParameters['groupBy']);
-            }
-
-            return $queryBuilder;
         }
+
+        if (!empty($queryParameters['firstResult'])) {
+            $queryBuilder->setFirstResult((int)$queryParameters['firstResult']);
+        }
+
+        if (!empty($queryParameters['maxResults'])) {
+            $queryBuilder->setMaxResults((int)$queryParameters['maxResults']);
+        }
+
+        if (!empty($queryParameters['groupBy'])) {
+            $queryBuilder->groupBy($queryParameters['groupBy']);
+        }
+
+        return $queryBuilder;
     }
+
 
 
 
