@@ -201,7 +201,7 @@ class TestRecordList extends DatabaseRecordList {
         }
         //CUSTOM DISRESPECT PID
         $queryBuilder->setParameter('where', '');
-        DebuggerUtility::var_dump($queryBuilder, 'QueryBuilder in GetTable');
+        
         $this->setTotalItems($table, $id, $additionalConstraints);
 
         // Init
@@ -210,7 +210,7 @@ class TestRecordList extends DatabaseRecordList {
         $out = '';
         $tableHeader = '';
         $listOnlyInSingleTableMode = $this->listOnlyInSingleTableMode && !$this->table;
-        DebuggerUtility::var_dump($this->totalItems, 'TotalItems');
+        DebuggerUtility::var_dump($queryResult, 'queryResult');
 
         if ($this->totalItems) {
             if ($listOnlyInSingleTableMode) {
@@ -221,6 +221,7 @@ class TestRecordList extends DatabaseRecordList {
                     $this->iLimt = $this->totalItem;
                 }
                 $dbCount = $queryResult->rowCount();
+                DebuggerUtility::var_dump($queryResult->rowCount(), 'RowCount');
             }
         }
         if($dbCount) {
@@ -439,9 +440,7 @@ class TestRecordList extends DatabaseRecordList {
             $queryBuilder
                 ->select('*')
                 ->from($queryParameters['table'])
-                ->where(...$queryParameters['where']);                      
-            //CUSTOM DISRESPECT PAGEID            
-            DebuggerUtility::var_dump($queryBuilder, 'QueryBuilder in SetTotalItems');
+                ->where(...$queryParameters['where']);            
             $this->totalItems = (int)$queryBuilder->count('*')
                 ->execute()
                 ->fetchColumn();
