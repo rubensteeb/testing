@@ -196,7 +196,7 @@ class TestRecordList extends DatabaseRecordList {
             //(Api function from TYPO3\CMS\Recordlist\RecordList\AbstractDatabaseRecordList)
             $queryBuilder = $this->getQueryBuilder($table, $id, $additionalConstraints);
         }
-        
+        $queryBuilder->setParameter('where', '');
         DebuggerUtility::var_dump($queryBuilder, 'queryBuilder');
 
 
