@@ -534,7 +534,7 @@ class TestRecordList extends DatabaseRecordList {
                 },
                 $tagAttributes
             );
-            DebuggerUtility::var_dump()
+            DebuggerUtility::var_dump($theData, 'TheData in Render List Row');
             $rowOutput .= $this->addElement(1, $theIcon, $theData, GeneralUtility::implodeAttributes($tagAttributes, true));
             // Finally, return table row element:
             return $rowOutput;
