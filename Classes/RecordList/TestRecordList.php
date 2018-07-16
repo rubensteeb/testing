@@ -207,7 +207,7 @@ class TestRecordList extends DatabaseRecordList {
         $out = '';
         $tableHeader = '';
         $listOnlyInSingleTableMode = $this->listOnlyInSingleTableMode && !$this->table;
-        DebuggerUtility::var_dump($queryResult, 'QueryResult');
+        DebuggerUtility::var_dump($this->totalItems, 'TotalItems');
 
         if ($this->totalItems) {
             if ($listOnlyInSingleTableMode) {
