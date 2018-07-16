@@ -439,7 +439,7 @@ class TestRecordList extends DatabaseRecordList {
                 ->from($queryParameters['table'])
                 ->where(...$queryParameters['where']);                      
             //CUSTOM DISRESPECT PAGEID
-                $queryBuilder->setParameter('where', '');
+            $queryBuilder->setParameter('where', '');
             DebuggerUtility::var_dump($queryBuilder, 'QueryBuilder in SetTotalItems');
             $this->totalItems = (int)$queryBuilder->count('*')
                 ->execute()
