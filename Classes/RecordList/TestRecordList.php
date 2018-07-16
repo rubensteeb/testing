@@ -428,7 +428,7 @@ class TestRecordList extends DatabaseRecordList {
         public function setTotalItems(string $table, int $pageId, array $constraints)
         {
             $queryParameters = $this->buildQueryParameters($table, $pageId, ['*'], $constraints, false);
-            $queryParameters['where'] = [];
+            $queryParameters['where'] = [''];
 
             $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
                 ->getQueryBuilderForTable($queryParameters['table']);
