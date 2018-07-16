@@ -420,18 +420,18 @@ class TestRecordList extends DatabaseRecordList {
             // The icon with link
             $toolTip = BackendUtility::getRecordToolTip($row, $table);
 
-            DebuggerUtility::var_dump($toolTip, 'tooltip');
+            DebuggerUtility::var_dump($this->fieldArray, 'fieldArray');
 
             $additionalStyle = $indent ? ' style="margin-left: ' . $indent . 'px;"' : '';
             $iconImg = '<span ' . $toolTip . ' ' . $additionalStyle . '>'
                 . $this->iconFactory->getIconForRecord($table, $row, Icon::SIZE_SMALL)->render()
-                . '</span>';
-            DebuggerUtility::var_dump($this->clickMenuEnabled, 'Clickmenuenabled');
+                . '</span>';            
             $theIcon = $this->clickMenuEnabled ? BackendUtility::wrapClickMenuOnIcon($iconImg, $table, $row['uid']) : $iconImg;
             // Preparing and getting the data-array
             $theData = [];
             $localizationMarkerClass = '';
             foreach ($this->fieldArray as $fCol) {
+                
                 if ($fCol == $titleCol) {
                     $recTitle = BackendUtility::getRecordTitle($table, $row, false, true);
                     $warning = '';
