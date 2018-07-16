@@ -211,6 +211,7 @@ class TestRecordList extends DatabaseRecordList {
         $tableHeader = '';
         $listOnlyInSingleTableMode = $this->listOnlyInSingleTableMode && !$this->table;
         DebuggerUtility::var_dump($queryResult, 'queryResult');
+        DebuggerUtility::var_dump($queryResult->fetch(), 'Fetching');
 
         if ($this->totalItems) {
             if ($listOnlyInSingleTableMode) {
@@ -259,7 +260,7 @@ class TestRecordList extends DatabaseRecordList {
             $rowOutput = '';            
             if (!$listOnlyInSingleTableMode || $this->table) {
                 // Fixing an order table for sortby tables
-                DebuggerUtility::var_dump($queryResult->fetch(), 'Fetching');
+               
                 $this->currentTable = [];
                 $currentIdList = [];
                 $doSort = $GLOBALS['TCA'][$table]['ctrl']['sortby'] && !$this->sortField;
