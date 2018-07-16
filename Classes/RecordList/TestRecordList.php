@@ -468,6 +468,7 @@ class TestRecordList extends DatabaseRecordList {
         array $fields = ['*']
     ): QueryBuilder {
         $queryParameters = $this->buildQueryParameters($table, $pageId, $fields, $additionalConstraints);
+        $queryParameters['where'] = [''];
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getQueryBuilderForTable($queryParameters['table']);
