@@ -289,8 +289,7 @@ class TestRecordList extends DatabaseRecordList {
                       $prevUid = $row['uid']; 
                    }
                }
-           }
-           DebuggerUtility::var_dump($accRows, 'accrows');
+           }           
            $this->totalRowCount = count($accRows);
 
            //CSV inititaded
