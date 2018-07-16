@@ -225,35 +225,34 @@ class TestRecordList extends DatabaseRecordList {
                 DebuggerUtility::var_dump($queryResult->rowCount(), 'RowCount');
             }
         }
-        if($dbCount) {
-            $tableTitle = htmlspecialchars($lang->sl($GLOBALS['TCA'][$table]['ctrl']['title']));
+        if ($dbCount) {
+            $tableTitle = htmlspecialchars($lang->sL($GLOBALS['TCA'][$table]['ctrl']['title']));
             if ($tableTitle === '') {
                 $tableTitle = $table;
             }
-            // Header line is Drawn
+            // Header line is drawn
             $theData = [];
-            if ($this->disbaleSingleTableView) {
-                $theData[$titleCol] = '<span class="c_table">' . BackendUtility::wrapInHelp($table, '', $tableTitle)
-                . '</span (<span class="t3js-table-total-items">' . $this->totalItems . '</span>)';
-            }
-            else {
+            if ($this->disableSingleTableView) {
+                $theData[$titleCol] = '<span class="c-table">' . BackendUtility::wrapInHelp($table, '', $tableTitle)
+                    . '</span> (<span class="t3js-table-total-items">' . $this->totalItems . '</span>)';
+            } else {
                 $icon = $this->table
-                    ? '<span title="' . htmlspecialchars($lang->getLL('contractView')) . '">' . $this->iconFactory->getIcon('actions-view-table-collapse'. Icon::SIZE_SMALL)->render() . '</span>'
-                    : '<span title="' . htmlspecialchars($lang->getLL('expandView')) . '">' . $this->iconFactory->getIcon('actions-view-table-expand', Icon::SIZE_SMALL)->render() - '</span>';
-                $theData[$titleCol] = $this->linkWrapTable($table, $tableTitle . ' (<span class="t3js-table-total-items>' . $this->totalItems . '</span>)' . $icon);
+                    ? '<span title="' . htmlspecialchars($lang->getLL('contractView')) . '">' . $this->iconFactory->getIcon('actions-view-table-collapse', Icon::SIZE_SMALL)->render() . '</span>'
+                    : '<span title="' . htmlspecialchars($lang->getLL('expandView')) . '">' . $this->iconFactory->getIcon('actions-view-table-expand', Icon::SIZE_SMALL)->render() . '</span>';
+                $theData[$titleCol] = $this->linkWrapTable($table, $tableTitle . ' (<span class="t3js-table-total-items">' . $this->totalItems . '</span>) ' . $icon);
             }
             if ($listOnlyInSingleTableMode) {
                 $tableHeader .= BackendUtility::wrapInHelp($table, '', $theData[$titleCol]);
             } else {
                 // Render collapse button if in multi table mode
                 $collapseIcon = '';
-                if(!$this->table) {
-                    $href = htmlspecialchars(($this->listUrl() . '&collapse[' . $table . ']=' . ($tableCollapsed ? '0' : '1')));
+                if (!$this->table) {
+                    $href = htmlspecialchars(($this->listURL() . '&collapse[' . $table . ']=' . ($tableCollapsed ? '0' : '1')));
                     $title = $tableCollapsed
-                       ? htmlspecialchars($lang->sL('LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:labels.expandTable'))
-                       : htmlspecialchars($lang->sL('LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:labels.collapseTable'));
-                    $icon = '<span class="collapseIcon">' . $this->iconFactory->getIcon(($tableCollapsed ? 'action-view-list-expand' : 'actions-view-list-collapse'), Icon::SIZE_SMALL)->render() . '</span>';
-                    $collapseIcon = '<a href="' . $href . '" title="' . '" class="pull-right trjs-toggle-recordlist" data-table="' . htmlspecialchars($table) . '" data-toggle="collapse" data-target="#recordlist-' . htmlspecialchars($table) . '">' . $icon . '</a>';                    
+                        ? htmlspecialchars($lang->sL('LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:labels.expandTable'))
+                        : htmlspecialchars($lang->sL('LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:labels.collapseTable'));
+                    $icon = '<span class="collapseIcon">' . $this->iconFactory->getIcon(($tableCollapsed ? 'actions-view-list-expand' : 'actions-view-list-collapse'), Icon::SIZE_SMALL)->render() . '</span>';
+                    $collapseIcon = '<a href="' . $href . '" title="' . $title . '" class="pull-right t3js-toggle-recordlist" data-table="' . htmlspecialchars($table) . '" data-toggle="collapse" data-target="#recordlist-' . htmlspecialchars($table) . '">' . $icon . '</a>';
                 }
                 $tableHeader .= $theData[$titleCol] . $collapseIcon;
             }
