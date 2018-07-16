@@ -39,73 +39,85 @@ class TestRecordList extends DatabaseRecordList {
         
     }
 
-    public function getTable($table, $id, $rowList ='') {
-        
+    /**
+     * Creates the listing of records from a single table
+     *
+     * @param string $table Table name
+     * @param int $id Page id
+     * @param string $rowList List of fields to show in the listing. Pseudo fields will be added including the record header.
+     * @throws \UnexpectedValueException
+     * @return string HTML table with the listing for the record.
+     */
+    public function getTable($table, $id, $rowList = '')
+    {
         $rowListArray = GeneralUtility::trimExplode(',', $rowList, true);
-        if(!empty($GLOBALS['TCA'][$table]['ctrl']['descriptionColumn']) && empty($rowListArray)) {
+        // if no columns have been specified, show description (if configured)
+        if (!empty($GLOBALS['TCA'][$table]['ctrl']['descriptionColumn']) && empty($rowListArray)) {
             $rowListArray[] = $GLOBALS['TCA'][$table]['ctrl']['descriptionColumn'];
         }
         $backendUser = $this->getBackendUserAuthentication();
-        $lang = $this->languageService;
-
+        $lang = $this->getLanguageService();
+        // Init
         $addWhere = '';
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
         $titleCol = $GLOBALS['TCA'][$table]['ctrl']['label'];
         $thumbsCol = $GLOBALS['TCA'][$table]['ctrl']['thumbnail'];
         $l10nEnabled = $GLOBALS['TCA'][$table]['ctrl']['languageField']
                      && $GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField']
-                     && $table !== 'pages_languages_overlay';
+                     && $table !== 'pages_language_overlay';
         $tableCollapsed = (bool)$this->tablesCollapsed[$table];
+        // prepare space icon
         $this->spaceIcon = '<span class="btn btn-default disabled">' . $this->iconFactory->getIcon('empty-empty', Icon::SIZE_SMALL)->render() . '</span>';
-
+        // Cleaning rowlist for duplicates and place the $titleCol as the first column always!
         $this->fieldArray = [];
-
+        // title Column
+        // Add title column
         $this->fieldArray[] = $titleCol;
-
-        if(!GeneralUtility::inList($rowList, '_CONTROL_')) {
-            $this->field[] = '_CONTROL_';
+        // Control-Panel
+        if (!GeneralUtility::inList($rowList, '_CONTROL_')) {
+            $this->fieldArray[] = '_CONTROL_';
         }
-        if($this->showClipboard) {
+        // Clipboard
+        if ($this->showClipboard) {
             $this->fieldArray[] = '_CLIPBOARD_';
         }
-        if($this->dontShowClipControlPanels) {
+        // Ref
+        if (!$this->dontShowClipControlPanels) {
             $this->fieldArray[] = '_REF_';
         }
-        if($this->searchLevels) {
+        // Path
+        if ($this->searchLevels) {
             $this->fieldArray[] = '_PATH_';
         }
-        // Localization (Commented Out because Inline Localization is wanted)
-        // if ($this->localizationView && $l10nEnabled) {
-        //     $this->fieldArray[] = '_LOCALIZATION_';
-        //     $this->fieldArray[] = '_LOCALIZATION_b';
-        //     // Only restrict to the default language if no search request is in place
-        //     if ($this->searchString === '') {
-        //         $addWhere = (string)$queryBuilder->expr()->orX(
-        //             $queryBuilder->expr()->lte($GLOBALS['TCA'][$table]['ctrl']['languageField'], 0),
-        //             $queryBuilder->expr()->eq($GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'], 0)
-        //         );
-        //     }
-        // }
-
-        //cleaning up
+        // Localization
+        if ($this->localizationView && $l10nEnabled) {
+            $this->fieldArray[] = '_LOCALIZATION_';
+            $this->fieldArray[] = '_LOCALIZATION_b';
+            // Only restrict to the default language if no search request is in place
+            if ($this->searchString === '') {
+                $addWhere = (string)$queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->lte($GLOBALS['TCA'][$table]['ctrl']['languageField'], 0),
+                    $queryBuilder->expr()->eq($GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'], 0)
+                );
+            }
+        }
+        // Cleaning up:
         $this->fieldArray = array_unique(array_merge($this->fieldArray, $rowListArray));
         if ($this->noControlPanels) {
             $tempArray = array_flip($this->fieldArray);
-            unset($tempArray['_CONTROL']);
+            unset($tempArray['_CONTROL_']);
             unset($tempArray['_CLIPBOARD_']);
             $this->fieldArray = array_keys($tempArray);
         }
-
-        //Creating the list of fields to include in the SQL query:
+        // Creating the list of fields to include in the SQL query:
         $selectFields = $this->fieldArray;
         $selectFields[] = 'uid';
         $selectFields[] = 'pid';
-
-        if($thumbCol) {
+        // adding column for thumbnails
+        if ($thumbsCol) {
             $selectFields[] = $thumbsCol;
         }
-
-        if($table === 'pages') {
+        if ($table === 'pages') {
             $selectFields[] = 'module';
             $selectFields[] = 'extendToSubpages';
             $selectFields[] = 'nav_hide';
@@ -113,42 +125,36 @@ class TestRecordList extends DatabaseRecordList {
             $selectFields[] = 'shortcut';
             $selectFields[] = 'shortcut_mode';
             $selectFields[] = 'mount_pid';
-        } 
-
-        if (is_array($GLOBALS['TCA'][$table]['ctrl']['enableColumns'])) {
-            $selectFields = array_merge($selectFields, $GLOBALS['TCA'][$table]['ctrl']['enableColumns']);
         }
-
+        if (is_array($GLOBALS['TCA'][$table]['ctrl']['enablecolumns'])) {
+            $selectFields = array_merge($selectFields, $GLOBALS['TCA'][$table]['ctrl']['enablecolumns']);
+        }
         foreach (['type', 'typeicon_column', 'editlock'] as $field) {
-            if($GLOBALS['TCA'][$table]['ctrl'][$field]) {
-                $selectFields[] = $GLOBALS['TCA'][$table]['ctrl'][$fields];
+            if ($GLOBALS['TCA'][$table]['ctrl'][$field]) {
+                $selectFields[] = $GLOBALS['TCA'][$table]['ctrl'][$field];
             }
         }
-
         if ($GLOBALS['TCA'][$table]['ctrl']['versioningWS']) {
             $selectFields[] = 't3ver_id';
             $selectFields[] = 't3ver_state';
             $selectFields[] = 't3ver_wsid';
         }
-
         if ($l10nEnabled) {
             $selectFields[] = $GLOBALS['TCA'][$table]['ctrl']['languageField'];
             $selectFields[] = $GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'];
         }
-
         if ($GLOBALS['TCA'][$table]['ctrl']['label_alt']) {
             $selectFields = array_merge(
                 $selectFields,
                 GeneralUtility::trimExplode(',', $GLOBALS['TCA'][$table]['ctrl']['label_alt'], true)
             );
         }
-
-        //Unique List
+        // Unique list!
         $selectFields = array_unique($selectFields);
         $fieldListFields = $this->makeFieldList($table, 1);
-        if (empty($fieldListFields) && GLOBALS['TYPO3_CONF_VARS']['BE']['debug']) {
-            $message = sprintf($lang->sL('LLL:EXT:lang/Resources/Private/Language/locallang_mod_web_list.xlf::missingTcaColumnsMessage'), $table, $table);
-            $messageTitle = $lang->sl('LLL:EXT:lang/Resources/Private/Language/locallang_mod_web_list.xlf:missingTcaColumnsMessageTitle');
+        if (empty($fieldListFields) && $GLOBALS['TYPO3_CONF_VARS']['BE']['debug']) {
+            $message = sprintf($lang->sL('LLL:EXT:lang/Resources/Private/Language/locallang_mod_web_list.xlf:missingTcaColumnsMessage'), $table, $table);
+            $messageTitle = $lang->sL('LLL:EXT:lang/Resources/Private/Language/locallang_mod_web_list.xlf:missingTcaColumnsMessageTitle');
             /** @var FlashMessage $flashMessage */
             $flashMessage = GeneralUtility::makeInstance(
                 FlashMessage::class,
@@ -156,75 +162,74 @@ class TestRecordList extends DatabaseRecordList {
                 $messageTitle,
                 FlashMessage::WARNING,
                 true
-            );            
-            /** @var FlashMessageService $flashMessageService */
-            $flahsMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
-            /** @var FlashMessageQueue */
+            );
+            /** @var $flashMessageService FlashMessageService */
+            $flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
+            /** @var $defaultFlashMessageQueue \TYPO3\CMS\Core\Messaging\FlashMessageQueue */
             $defaultFlashMessageQueue = $flashMessageService->getMessageQueueByIdentifier();
             $defaultFlashMessageQueue->enqueue($flashMessage);
         }
-
-
+        // Making sure that the fields in the field-list ARE in the field-list from TCA!
         $selectFields = array_intersect($selectFields, $fieldListFields);
-
-        $slFieldList = implode(',', $selectFields);
+        // Implode it into a list of fields for the SQL-statement.
+        $selFieldList = implode(',', $selectFields);
         $this->selFieldList = $selFieldList;
-
-        if(is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.db_list_extra.inc']['getTable'])) {
-            foreach($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.db_list_extra.inc']['getTable'] as $classData) {
+        if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.db_list_extra.inc']['getTable'])) {
+            foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.db_list_extra.inc']['getTable'] as $classData) {
                 $hookObject = GeneralUtility::getUserObj($classData);
-                if (!hookObject instanceof RecordListGetTableHookInterface) {
-                    throw new \UnexpectedValueException($classData . ' must implement the interface ' . RecordListGetTableHookInterface::class, 1195114460);
+                if (!$hookObject instanceof RecordListGetTableHookInterface) {
+                    throw new \UnexpectedValueException($classData . ' must implement interface ' . RecordListGetTableHookInterface::class, 1195114460);
                 }
-                $hookObject->getDBlist($table, $id, $addWhere, $selFieldList, $this);
-            }            
+                $hookObject->getDBlistQuery($table, $id, $addWhere, $selFieldList, $this);
+            }
         }
-        
-        $additionalConstraints = empty($addwhere) ? [] : [QueryHelper::stripLogicalOperatorPrefix($addWhere)];
+        $additionalConstraints = empty($addWhere) ? [] : [QueryHelper::stripLogicalOperatorPrefix($addWhere)];
         $selFieldList = GeneralUtility::trimExplode(',', $selFieldList, true);
 
-        //Create the SQL query for selecting the elements in the listing:
-        // don't do paging when outputting csv
+        // Create the SQL query for selecting the elements in the listing:
+        // do not do paging when outputting as CSV
         if ($this->csvOutput) {
             $this->iLimit = 0;
         }
-        if($this->firstElementNumber > 2 && $this->iLimit > 0) {
-            //Get the two previous rows for sorting if displaying page > 1
+        if ($this->firstElementNumber > 2 && $this->iLimit > 0) {
+            // Get the two previous rows for sorting if displaying page > 1
             $this->firstElementNumber = $this->firstElementNumber - 2;
             $this->iLimit = $this->iLimit + 2;
-            //(Api function from TYPO3\CMS\Recordlist\RecordList\AbstractDatabaseRecordList)
+            // (API function from TYPO3\CMS\Recordlist\RecordList\AbstractDatabaseRecordList)
             $queryBuilder = $this->getQueryBuilder($table, $id, $additionalConstraints);
             $this->firstElementNumber = $this->firstElementNumber + 2;
             $this->iLimit = $this->iLimit - 2;
         } else {
-            //(Api function from TYPO3\CMS\Recordlist\RecordList\AbstractDatabaseRecordList)
+            // (API function from TYPO3\CMS\Recordlist\RecordList\AbstractDatabaseRecordList)
             $queryBuilder = $this->getQueryBuilder($table, $id, $additionalConstraints);
         }
-        //CUSTOM DISRESPECT PID
-        $queryBuilder->setParameter('where', '');
-        
-        $this->setTotalItems($table, $id, $additionalConstraints);
 
+        // Finding the total amount of records on the page
+        // (API function from TYPO3\CMS\Recordlist\RecordList\AbstractDatabaseRecordList)
+        $this->setTotalItems($table, $id, $additionalConstraints);
         
-        // Init
+        // Init:
         $queryResult = $queryBuilder->execute();
         $dbCount = 0;
         $out = '';
         $tableHeader = '';
-        $listOnlyInSingleTableMode = $this->listOnlyInSingleTableMode && !$this->table;        
-
+        $listOnlyInSingleTableMode = $this->listOnlyInSingleTableMode && !$this->table;
+        // If the count query returned any number of records, we perform the real query,
+        // selecting records.
         if ($this->totalItems) {
+            // Fetch records only if not in single table mode
             if ($listOnlyInSingleTableMode) {
                 $dbCount = $this->totalItems;
             } else {
+                // Set the showLimit to the number of records when outputting as CSV
                 if ($this->csvOutput) {
                     $this->showLimit = $this->totalItems;
-                    $this->iLimt = $this->totalItem;
+                    $this->iLimit = $this->totalItems;
                 }
                 $dbCount = $queryResult->rowCount();
-                DebuggerUtility::var_dump($queryResult->rowCount(), 'RowCount');
             }
         }
+        // If any records was selected, render the list:
         if ($dbCount) {
             $tableTitle = htmlspecialchars($lang->sL($GLOBALS['TCA'][$table]['ctrl']['title']));
             if ($tableTitle === '') {
@@ -256,11 +261,10 @@ class TestRecordList extends DatabaseRecordList {
                 }
                 $tableHeader .= $theData[$titleCol] . $collapseIcon;
             }
-            DebuggerUtility::var_dump($theData, 'theData');
-            $rowOutput = '';            
+            // Render table rows only if in multi table view or if in single table view
+            $rowOutput = '';
             if (!$listOnlyInSingleTableMode || $this->table) {
                 // Fixing an order table for sortby tables
-               
                 $this->currentTable = [];
                 $currentIdList = [];
                 $doSort = $GLOBALS['TCA'][$table]['ctrl']['sortby'] && !$this->sortField;
@@ -382,6 +386,7 @@ class TestRecordList extends DatabaseRecordList {
                 // The header row for the table is now created:
                 $out .= $this->renderListHeader($table, $currentIdList);
             }
+
             $collapseClass = $tableCollapsed && !$this->table ? 'collapse' : 'collapse in';
             $dataState = $tableCollapsed && !$this->table ? 'collapsed' : 'expanded';
 
@@ -415,11 +420,8 @@ class TestRecordList extends DatabaseRecordList {
             }
         }
         // Return content:
-        DebuggerUtility::var_dump($out, 'OUT Extension');
         return $out;
-        
-
-        }
+    }
         /**
          * Set the total items for the record list
          *
