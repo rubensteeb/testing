@@ -389,7 +389,8 @@ class TestRecordList extends DatabaseRecordList {
                 return '';
             }            
             DebuggerUtility::var_dump($row, 'Row in Render List Row');
-
+            $this->setFields[$table][] = '_CONTROL_';
+            $this->setFields[$table][] = '_CLIPBOARD_';
             $rowOutput = '';
             $id_orig = null;
             // If in search mode, make sure the preview will show the correct page
