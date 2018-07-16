@@ -308,7 +308,7 @@ class TestRecordList extends DatabaseRecordList {
                 if ($cc < $this->iLimit) {
                     $cc++;
                     $this->translations = false;
-                    // $rowOutput .= $this->renderListRow($table, $row, $cc, $titleCol, $thumbsCol);
+                    $rowOutput .= $this->renderListRow($table, $row, $cc, $titleCol, $thumbsCol);
                     
 
                 }
@@ -369,8 +369,175 @@ class TestRecordList extends DatabaseRecordList {
             }
         
         // Return content:
-        return $out;
-    }
+            return $out;
+        }
+
+        /**
+         * Rendering a single row for the list
+         * @param string $table Table name
+         * @param mixed[] $row Current record
+         * @param int $cc Counter, counting for each time an element is renderd (used for alternating colors)
+         * @param string $titleCol Table field (column) where header value is found
+         * @param string $thumbsCol Table Field (column) where (possible) thumbnails can be found
+         * @param int $indent Indent from the left.
+         * @return string Table row for the element
+         * @access private
+         * @see getTable()
+         */
+        public function renderListRow($table, $row, $cc, $titleCol, $thumbsCol, $indent = 0)
+        {
+            if (!is_array($row)) {
+                return '';
+            }
+            $rowOutput = '';
+            $id_orig = null;
+            // If in search mode, make sure the preview will show the correct page
+            if ((string)$this->searchString !== '') {
+                $id_orig = $this->id;
+                $this->id = $row['pid'];
+            }
+    
+            $tagAttributes = [
+                'class' => ['t3js-entity'],
+                'data-table' => $table,
+                'title' => 'id=' . $row['uid'],
+            ];
+    
+            // Add special classes for first and last row
+            if ($cc == 1 && $indent == 0) {
+                $tagAttributes['class'][] = 'firstcol';
+            }
+            if ($cc == $this->totalRowCount || $cc == $this->iLimit) {
+                $tagAttributes['class'][] = 'lastcol';
+            }
+            // Overriding with versions background color if any:
+            if (!empty($row['_CSSCLASS'])) {
+                $tagAttributes['class'] = [$row['_CSSCLASS']];
+            }
+            // Incr. counter.
+            $this->counter++;
+            // The icon with link
+            $toolTip = BackendUtility::getRecordToolTip($row, $table);
+            $additionalStyle = $indent ? ' style="margin-left: ' . $indent . 'px;"' : '';
+            $iconImg = '<span ' . $toolTip . ' ' . $additionalStyle . '>'
+                . $this->iconFactory->getIconForRecord($table, $row, Icon::SIZE_SMALL)->render()
+                . '</span>';
+            $theIcon = $this->clickMenuEnabled ? BackendUtility::wrapClickMenuOnIcon($iconImg, $table, $row['uid']) : $iconImg;
+            // Preparing and getting the data-array
+            $theData = [];
+            $localizationMarkerClass = '';
+            foreach ($this->fieldArray as $fCol) {
+                if ($fCol == $titleCol) {
+                    $recTitle = BackendUtility::getRecordTitle($table, $row, false, true);
+                    $warning = '';
+                    // If the record is edit-locked	by another user, we will show a little warning sign:
+                    $lockInfo = BackendUtility::isRecordLocked($table, $row['uid']);
+                    if ($lockInfo) {
+                        $warning = '<span data-toggle="tooltip" data-placement="right" data-title="' . htmlspecialchars($lockInfo['msg']) . '">'
+                            . $this->iconFactory->getIcon('status-warning-in-use', Icon::SIZE_SMALL)->render() . '</span>';
+                    }
+                    $theData[$fCol] = $theData['__label'] = $warning . $this->linkWrapItems($table, $row['uid'], $recTitle, $row);
+                    // Render thumbnails, if:
+                    // - a thumbnail column exists
+                    // - there is content in it
+                    // - the thumbnail column is visible for the current type
+                    $type = 0;
+                    if (isset($GLOBALS['TCA'][$table]['ctrl']['type'])) {
+                        $typeColumn = $GLOBALS['TCA'][$table]['ctrl']['type'];
+                        $type = $row[$typeColumn];
+                    }
+                    // If current type doesn't exist, set it to 0 (or to 1 for historical reasons,
+                    // if 0 doesn't exist)
+                    if (!isset($GLOBALS['TCA'][$table]['types'][$type])) {
+                        $type = isset($GLOBALS['TCA'][$table]['types'][0]) ? 0 : 1;
+                    }
+                    $visibleColumns = $GLOBALS['TCA'][$table]['types'][$type]['showitem'];
+    
+                    if ($this->thumbs &&
+                        trim($row[$thumbsCol]) &&
+                        preg_match('/(^|(.*(;|,)?))' . $thumbsCol . '(((;|,).*)|$)/', $visibleColumns) === 1
+                    ) {
+                        $thumbCode = '<br />' . $this->thumbCode($row, $table, $thumbsCol);
+                        $theData[$fCol] .= $thumbCode;
+                        $theData['__label'] .= $thumbCode;
+                    }
+                    if (isset($GLOBALS['TCA'][$table]['ctrl']['languageField'])
+                        && $row[$GLOBALS['TCA'][$table]['ctrl']['languageField']] != 0
+                        && $row[$GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField']] != 0
+                    ) {
+                        // It's a translated record with a language parent
+                        $localizationMarkerClass = ' localization';
+                    }
+                } elseif ($fCol === 'pid') {
+                    $theData[$fCol] = $row[$fCol];
+                } elseif ($fCol === '_PATH_') {
+                    $theData[$fCol] = $this->recPath($row['pid']);
+                } elseif ($fCol === '_REF_') {
+                    $theData[$fCol] = $this->createReferenceHtml($table, $row['uid']);
+                } elseif ($fCol === '_CONTROL_') {
+                    $theData[$fCol] = $this->makeControl($table, $row);
+                } elseif ($fCol === '_CLIPBOARD_') {
+                    $theData[$fCol] = $this->makeClip($table, $row);
+                } elseif ($fCol === '_LOCALIZATION_') {
+                    list($lC1, $lC2) = $this->makeLocalizationPanel($table, $row);
+                    $theData[$fCol] = $lC1;
+                    $theData[$fCol . 'b'] = '<div class="btn-group">' . $lC2 . '</div>';
+                } elseif ($fCol === '_LOCALIZATION_b') {
+                    // deliberately empty
+                } else {
+                    $pageId = $table === 'pages' ? $row['uid'] : $row['pid'];
+                    $tmpProc = BackendUtility::getProcessedValueExtra($table, $fCol, $row[$fCol], 100, $row['uid'], true, $pageId);
+                    $theData[$fCol] = $this->linkUrlMail(htmlspecialchars($tmpProc), $row[$fCol]);
+                    if ($this->csvOutput) {
+                        $row[$fCol] = BackendUtility::getProcessedValueExtra($table, $fCol, $row[$fCol], 0, $row['uid']);
+                    }
+                }
+            }
+            // Reset the ID if it was overwritten
+            if ((string)$this->searchString !== '') {
+                $this->id = $id_orig;
+            }
+            // Add row to CSV list:
+            if ($this->csvOutput) {
+                $this->addToCSV($row);
+            }
+            // Add classes to table cells
+            $this->addElement_tdCssClass[$titleCol] = 'col-title col-responsive' . $localizationMarkerClass;
+            $this->addElement_tdCssClass['__label'] = $this->addElement_tdCssClass[$titleCol];
+            $this->addElement_tdCssClass['_CONTROL_'] = 'col-control';
+            if ($this->getModule()->MOD_SETTINGS['clipBoard']) {
+                $this->addElement_tdCssClass['_CLIPBOARD_'] = 'col-clipboard';
+            }
+            $this->addElement_tdCssClass['_PATH_'] = 'col-path';
+            $this->addElement_tdCssClass['_LOCALIZATION_'] = 'col-localizationa';
+            $this->addElement_tdCssClass['_LOCALIZATION_b'] = 'col-localizationb';
+            // Create element in table cells:
+            $theData['uid'] = $row['uid'];
+            if (isset($GLOBALS['TCA'][$table]['ctrl']['languageField'])
+                && isset($GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'])
+                && $table !== 'pages_language_overlay'
+            ) {
+                $theData['_l10nparent_'] = $row[$GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField']];
+            }
+    
+            $tagAttributes = array_map(
+                function ($attributeValue) {
+                    if (is_array($attributeValue)) {
+                        return implode(' ', $attributeValue);
+                    }
+                    return $attributeValue;
+                },
+                $tagAttributes
+            );
+    
+            $rowOutput .= $this->addElement(1, $theIcon, $theData, GeneralUtility::implodeAttributes($tagAttributes, true));
+            // Finally, return table row element:
+            return $rowOutput;
+        }
+
+
+
+
         /**
          * Set the total items for the record list
          *
@@ -451,6 +618,8 @@ class TestRecordList extends DatabaseRecordList {
 
         return $queryBuilder;
     }
+
+
 }
 
 
