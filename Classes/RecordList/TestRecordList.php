@@ -175,7 +175,7 @@ class TestRecordList extends DatabaseRecordList {
                 $hookObject->getDBlist($table, $id, $addWhere, $selFieldList, $this);
             }            
         }
-        DebuggerUtility::var_dump($addWhere, 'WHERE constraints');
+        
         $additionalConstraints = empty($addwhere) ? [] : [QueryHelper::stripLogicalOperatorPrefix($addWhere)];
         $selFieldList = GeneralUtility::trimExplode(',', $selFieldList, true);
 
@@ -196,8 +196,15 @@ class TestRecordList extends DatabaseRecordList {
             //(Api function from TYPO3\CMS\Recordlist\RecordList\AbstractDatabaseRecordList)
             $queryBuilder = $this->getQueryBuilder($table, $id, $additionalConstraints);
         }
+        //CUSTOM DISRESPECT PID
         $queryBuilder->setParameter('where', '');
-        DebuggerUtility::var_dump($queryBuilder, 'queryBuilder');
+
+        $this->setTotalItems($table, $id, $additionalConstraints);
+
+        // Init
+        $queryResult = $queryBuilder->execute();
+        DebuggerUtility::var_dump($queryResult, 'QueryResult');
+        
 
 
 
