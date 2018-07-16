@@ -415,6 +415,34 @@ class TestRecordList extends DatabaseRecordList {
         
 
         }
+        /**
+         * Set the total items for the record list
+         *
+         * @param string $table Table name
+         * @param int $pageId Only used to build the search constraints, $this->pidList is used for restrictions
+         * @param array $constraints Additional constraints for where clause
+         */
+        public function setTotalItems(string $table, int $pageId, array $constraints)
+        {
+            $queryParameters = $this->buildQueryParameters($table, $pageId, ['*'], $constraints, false);
+            
+            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+                ->getQueryBuilderForTable($queryParameters['table']);
+            $queryBuilder->getRestrictions()
+                ->removeAll()
+                ->add(GeneralUtility::makeInstance(DeletedRestriction::class))
+                ->add(GeneralUtility::makeInstance(BackendWorkspaceRestriction::class));
+            $queryBuilder
+                ->from($queryParameters['table'])
+                ->where(...$queryParameters['where']);                      
+            //CUSTOM DISRESPECT PAGEID
+                $queryBuilder->setParameter('where', '');
+
+            $this->totalItems = (int)$queryBuilder->count('*')
+                ->execute()
+                ->fetchColumn();
+        }
+
     }        
 
 
