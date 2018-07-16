@@ -203,7 +203,181 @@ class TestRecordList extends DatabaseRecordList {
 
         // Init
         $queryResult = $queryBuilder->execute();
+        $dbCount = 0;
+        $out = '';
+        $tableHeader = '';
+        $listOnlyInSingleTableMode = $this->listOnlyInSingleTableMode && !$this->table;
         DebuggerUtility::var_dump($queryResult, 'QueryResult');
+
+        if ($this->totalItems) {
+            if ($listOnlyInSingleTableMode) {
+                $dbCount = $this->totalItems;
+            } else {
+                if ($this->csvOutput) {
+                    $this->showLimit = $this->totalItems;
+                    $this->iLimt = $this->totalItem;
+                }
+                $dbCount = $queryResult->rowCount();
+            }
+        }
+        if($dbCount) {
+            $tableTitle = htmlspecialchars($lang->sl($GLOBALS['TCA'][$table]['ctrl']['title']));
+            if ($tableTitle === '') {
+                $tableTitle = $table;
+            }
+            // Header line is Drawn
+            $theData = [];
+            if ($this->disbaleSingleTableView) {
+                $theData[$titleCol] = '<span class="c_table">' . BackendUtility::wrapInHelp($table, '', $tableTitle)
+                . '</span (<span class="t3js-table-total-items">' . $this->totalItems . '</span>)';
+            }
+            else {
+                $icon = $this->table
+                    ? '<span title="' . htmlspecialchars($lang->getLL('contractView')) . '">' . $this->iconFactory->getIcon('actions-view-table-collapse'. Icon::SIZE_SMALL)->render() . '</span>'
+                    : '<span title="' . htmlspecialchars($lang->getLL('expandView')) . '">' . $this->iconFactory->getIcon('actions-view-table-expand', Icon::SIZE_SMALL)->render() - '</span>';
+                $theData[$titleCol] = $this->linkWrapTable($table, $tableTitle . ' (<span class="t3js-table-total-items>' . $this->totalItems . '</span>' . $icon);
+            }
+            if ($listOnlyInSingleTableMode) {
+                $tableHeader .= BackendUtility::wrapInHelp($table, '', $theData[$titleCol]);
+            } else {
+                // Render collapse button if in multi table mode
+                $collapseIcon = '';
+                if(!$this->table) {
+                    $href = htmlspecialchars(($this->listUrl() . '&collapse[' . $table . ']=' . ($tableCollapsed ? '0' : '1')));
+                    $title = $tableCollapsed
+                       ? htmlspecialchars($lang->sL('LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:labels.expandTable'))
+                       : htmlspecialchars($lang->sL('LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:labels.collapseTable'));
+                    $icon = '<span class="collapseIcon">' . $this->iconFactory->getIcon(($tableCollapsed ? 'action-view-list-expand' : 'actions-view-list-collapse'), Icon::SIZE_SMALL)->render() . '</span>';
+                    $collapseIcon = '<a href="' . $href . '" title="' . '" class="pull-right trjs-toggle-recordlist" data-table="' . htmlspecialchars($table) . '" data-toggle="collapse" data-target="#recordlist-' . htmlspecialchars($table) . '">' . $icon . '</a>';                    
+                }
+                $tableHeader .= $theData[$titleCol] . $collapseIcon;
+            }
+            $rowOutput = '';            
+            if (!$listOnlyInSingleTableMode || $this->table) {
+                // Fixing an order table for sortby tables
+                $this->currentTable = [];
+                $currentIdList = [];
+                $doSort = $GLOBALS['TCA'][$table]['ctrl']['sortby'] && !$this->sortField;
+                $prevUid = 0;
+                $prevPrevUid = 0;
+                // Get first two rows and initialize prevPrevUid and prevUid if on page > 1
+                if ($this->firstElementNumber > 2 && $this->iLimit > 0) {
+                    $row = $queryResult->fetch();
+                    $prevPrevUid = -((int)$row['uid']);
+                    $row = $queryResult->fetch();
+                    $prevUid = $row['uid'];
+                }
+                $accRows = [];
+                // Accumulate rows here
+                while ($row = $queryResult->fetch()) {
+                    if (!$this->isRowListingConditionFulfilled($table, $row)) {
+                        continue;
+                    }
+                    // In offline workspace, look for alternative record:
+                    BackendUtility::workspaceOL($table, $row, $backendUser->workspace, true);
+                    if (is_array($row)) {
+                        $accRows[] = $row;
+                        $currentIdList[] = $row['uid'];
+                        if ($doSort) {
+                            if ($prevUid) {
+                                $this->currentTable['prev'][$row['uid']] = $prevPrevUid;
+                                $this->currentTable['next'][$prevUid] = '-' . $row['uid'];
+                                $this->currentTable['prevUid'][$row['uid']] = $prevUid;
+                            }
+                            $prevPrevUid = isset($this->currentTable['prev'][$row['uid']]) ? -$prevUid : $row['pid'];
+                            $prevUid = $row['uid'];
+                        }
+                    }
+                }
+                $this->totalRowCount = count($accRows);
+                // CSV initiated
+                if ($this->csvOutput) {
+                    $this->initCSV();
+                }
+                // Render items:
+                $this->CBnames = [];
+                $this->duplicateStack = [];
+                $this->eCounter = $this->firstElementNumber;
+                $cc = 0;
+                foreach ($accRows as $row) {
+                    // Render item row if counter < limit
+                    if ($cc < $this->iLimit) {
+                        $cc++;
+                        $this->translations = false;
+                        $rowOutput .= $this->renderListRow($table, $row, $cc, $titleCol, $thumbsCol);
+                        // If localization view is enabled and no search happened it means that the selected
+                        // records are either default or All language and here we will not select translations
+                        // which point to the main record:
+                        if ($this->localizationView && $l10nEnabled && $this->searchString === '') {
+                            // For each available translation, render the record:
+                            if (is_array($this->translations)) {
+                                foreach ($this->translations as $lRow) {
+                                    // $lRow isn't always what we want - if record was moved we've to work with the
+                                    // placeholder records otherwise the list is messed up a bit
+                                    if ($row['_MOVE_PLH_uid'] && $row['_MOVE_PLH_pid']) {
+                                        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+                                            ->getQueryBuilderForTable($table);
+                                        $queryBuilder->getRestrictions()
+                                            ->removeAll()
+                                            ->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+                                        $predicates = [
+                                            $queryBuilder->expr()->eq(
+                                                't3ver_move_id',
+                                                $queryBuilder->createNamedParameter((int)$lRow['uid'], \PDO::PARAM_INT)
+                                            ),
+                                            $queryBuilder->expr()->eq(
+                                                'pid',
+                                                $queryBuilder->createNamedParameter((int)$row['_MOVE_PLH_pid'], \PDO::PARAM_INT)
+                                            ),
+                                            $queryBuilder->expr()->eq(
+                                                't3ver_wsid',
+                                                $queryBuilder->createNamedParameter((int)$row['t3ver_wsid'], \PDO::PARAM_INT)
+                                            ),
+                                        ];
+
+                                        $tmpRow = $queryBuilder
+                                            ->select(...$selFieldList)
+                                            ->from($table)
+                                            ->andWhere(...$predicates)
+                                            ->execute()
+                                            ->fetch();
+
+                                        $lRow = is_array($tmpRow) ? $tmpRow : $lRow;
+                                    }
+                                    // In offline workspace, look for alternative record:
+                                    BackendUtility::workspaceOL($table, $lRow, $backendUser->workspace, true);
+                                    if (is_array($lRow) && $backendUser->checkLanguageAccess($lRow[$GLOBALS['TCA'][$table]['ctrl']['languageField']])) {
+                                        $currentIdList[] = $lRow['uid'];
+                                        $rowOutput .= $this->renderListRow($table, $lRow, $cc, $titleCol, $thumbsCol, 18);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // Counter of total rows incremented:
+                    $this->eCounter++;
+                }
+                // Record navigation is added to the beginning and end of the table if in single
+                // table mode
+                if ($this->table) {
+                    $rowOutput = $this->renderListNavigation('top') . $rowOutput . $this->renderListNavigation('bottom');
+                } else {
+                    // Show that there are more records than shown
+                    if ($this->totalItems > $this->itemsLimitPerTable) {
+                        $countOnFirstPage = $this->totalItems > $this->itemsLimitSingleTable ? $this->itemsLimitSingleTable : $this->totalItems;
+                        $hasMore = $this->totalItems > $this->itemsLimitSingleTable;
+                        $colspan = $this->showIcon ? count($this->fieldArray) + 1 : count($this->fieldArray);
+                        $rowOutput .= '<tr><td colspan="' . $colspan . '">
+								<a href="' . htmlspecialchars(($this->listURL() . '&table=' . rawurlencode($table))) . '" class="btn btn-default">'
+                            . '<span class="t3-icon fa fa-chevron-down"></span> <i>[1 - ' . $countOnFirstPage . ($hasMore ? '+' : '') . ']</i></a>
+								</td></tr>';
+                    }
+                }
+                // The header row for the table is now created:
+                $out .= $this->renderListHeader($table, $currentIdList);
+            }
+
+        }
         
 
 
