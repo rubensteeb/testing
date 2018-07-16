@@ -201,7 +201,7 @@ class TestRecordList extends DatabaseRecordList {
         }
         //CUSTOM DISRESPECT PID
         $queryBuilder->setParameter('where', '');
-        DebuggerUtility($queryBuilder, 'QueryBuilder in GetTable');
+        DebuggerUtility::var_dump($queryBuilder, 'QueryBuilder in GetTable');
         $this->setTotalItems($table, $id, $additionalConstraints);
 
         // Init
