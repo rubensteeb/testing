@@ -204,6 +204,7 @@ class TestRecordList extends DatabaseRecordList {
         
         $this->setTotalItems($table, $id, $additionalConstraints);
 
+        DebuggerUtility::var_dump($queryResult->getSQL(), 'SQL');
         // Init
         $queryResult = $queryBuilder->execute();
         $dbCount = 0;
