@@ -11,6 +11,9 @@ use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 
+/** DEBUG */
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
+
 class TestRecordList extends DatabaseRecordList {
 
 
@@ -171,6 +174,7 @@ class TestRecordList extends DatabaseRecordList {
                 $hookObject->getDBlist($table, $id, $addWhere, $selFieldList, $this);
             }            
         }
+        DebuggerUtility::var_dump($addWhere, 'WHERE constraints');
         $additionalConstraints = empty($addwhere) ? [] : [QueryHelper::stripLogicalOperatorPrefix($addWhere)];
         $selFieldList = GeneralUtility::trimExplode(',', $selFieldList, true);
 
@@ -192,7 +196,7 @@ class TestRecordList extends DatabaseRecordList {
             $queryBuilder = $this->getQueryBuilder($table, $id, $additionalConstraints);
         }
 
-        \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($queryBuilder, 'queryBuilder');
+        DebuggerUtility::var_dump($queryBuilder, 'queryBuilder');
 
 
 
