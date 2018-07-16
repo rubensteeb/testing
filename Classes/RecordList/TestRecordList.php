@@ -500,7 +500,7 @@ class TestRecordList extends DatabaseRecordList {
 
         return $queryBuilder;
     }
-
+}
 
 
 
