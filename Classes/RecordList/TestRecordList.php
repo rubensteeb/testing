@@ -308,7 +308,7 @@ class TestRecordList extends DatabaseRecordList {
                 if ($cc < $this->iLimit) {
                     $cc++;
                     $this->translations = false;
-                    $rowOutput .= $this->renderListRow($table, $row, $cc, $titleCol, $thumbsCol);
+                    // $rowOutput .= $this->renderListRow($table, $row, $cc, $titleCol, $thumbsCol);
                     
 
                 }
