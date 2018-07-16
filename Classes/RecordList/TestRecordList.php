@@ -413,7 +413,7 @@ class TestRecordList extends DatabaseRecordList {
         
 
         }
-        
+    }        
 
 
 
@@ -427,11 +427,4 @@ class TestRecordList extends DatabaseRecordList {
         // $warningText = $this->languageService->getLL('deleteWarning');
         // \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($warningText, 'Delete Warning Text');
         // return 'Output Of the Record List';
-    }
 
-
-    
-
-
-
-}
