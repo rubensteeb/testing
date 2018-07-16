@@ -222,7 +222,7 @@ class TestRecordList extends DatabaseRecordList {
      * @param bool $addSorting Add sorting fields to query
      * @return array
      */
-    protected function buildQueryParamters(
+    protected function buildQueryParameters(
         string $table,
         int $pageId,
         array $fieldList = ['*'],
@@ -295,7 +295,7 @@ class TestRecordList extends DatabaseRecordList {
     // the array keys are eliminated by this as well to facilitate argument unpacking
     // when used with the querybuilder.
     $parameters['where'] = array_unique(array_filter(array_values($parameters['where'])));
-    \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($parameters, 'parameters');
+    \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($parameters, 'parameters');    
     return $parameters;
     }
 
