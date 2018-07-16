@@ -213,5 +213,92 @@ class TestRecordList extends DatabaseRecordList {
     }
 
 
+    /**
+     * Return the query parameters to select the records from a table on all PID (Override the default function from \TYPO3\CMS\Recordlist\RecordList\AbstractDatabaseRecordlist->buildQueryParameters)
+     * 
+     * @param string $table Talbe name
+     * @param int $pageId Page id ONly used to build search constraints, $this->pidList is used for restrictions
+     * @param string[] $fieldList List of fields to select from the table
+     * @param bool $addSorting Add sorting fields to query
+     * @return array
+     */
+    protected function buildQueryParamters(
+        string $table,
+        int $pageId,
+        array $fieldList = ['*'],
+        array $additionalConstraints = [],
+        bool $addSorting = true            
+    ): array {
+        $expressionBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+        ->getQueryBuilderForTable($table)
+        ->expr();
+
+    $parameters = [
+        'table' => $table,
+        'fields' => $fieldList,
+        'groupBy' => null,
+        'orderBy' => null,
+        'firstResult' => $this->firstElementNumber ?: null,
+        'maxResults' => $this->iLimit ? $this->iLimit : null,
+    ];
+
+    if ($addSorting === true) {
+        if ($this->sortField && in_array($this->sortField, $this->makeFieldList($table, 1))) {
+            $parameters['orderBy'][] = $this->sortRev ? [$this->sortField, 'DESC'] : [$this->sortField, 'ASC'];
+        } else {
+            $orderBy = $GLOBALS['TCA'][$table]['ctrl']['sortby'] ?: $GLOBALS['TCA'][$table]['ctrl']['default_sortby'];
+            $parameters['orderBy'] = QueryHelper::parseOrderBy((string)$orderBy);
+        }
+    }
+
+    // Build the query constraints
+    $constraints = [        
+        'search' => $this->makeSearchString($table, $pageId)
+    ];
+
+    // Filtering on displayable pages (permissions):
+    if ($table === 'pages' && $this->perms_clause) {
+        $constraints['pagePermsClause'] = $this->perms_clause;
+    }
+
+    // Filter out records that are translated, if TSconfig mod.web_list.hideTranslations is set
+    if ((GeneralUtility::inList($this->hideTranslations, $table) || $this->hideTranslations === '*')
+        && !empty($GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'])
+        && $table !== 'pages_language_overlay'
+    ) {
+        $constraints['transOrigPointerField'] = $expressionBuilder->eq(
+            $GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'],
+            0
+        );
+    }
+
+    $parameters['where'] = array_merge($constraints, $additionalConstraints);
+
+    $hookName = DatabaseRecordList::class;
+    if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS'][$hookName]['buildQueryParameters'])) {
+        foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS'][$hookName]['buildQueryParameters'] as $classRef) {
+            $hookObject = GeneralUtility::getUserObj($classRef);
+            if (method_exists($hookObject, 'buildQueryParametersPostProcess')) {
+                $hookObject->buildQueryParametersPostProcess(
+                    $parameters,
+                    $table,
+                    $pageId,
+                    $additionalConstraints,
+                    $fieldList,
+                    $this
+                );
+            }
+        }
+    }
+
+    // array_unique / array_filter used to eliminate empty and duplicate constraints
+    // the array keys are eliminated by this as well to facilitate argument unpacking
+    // when used with the querybuilder.
+    $parameters['where'] = array_unique(array_filter(array_values($parameters['where'])));
+
+    return $parameters;
+    }
+
+
 
 }
