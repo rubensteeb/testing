@@ -2,6 +2,7 @@
 namespace RubenSteeb\Testing\RecordList;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Recordlist\RecordList\DatabaseRecordList;
 use TYPO3\CMS\Lang\LanguageService;
 use TYPO3\CMS\Core\Database\ConnectionPool;
