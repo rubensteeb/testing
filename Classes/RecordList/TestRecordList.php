@@ -205,15 +205,13 @@ class TestRecordList extends DatabaseRecordList {
         
         $this->setTotalItems($table, $id, $additionalConstraints);
 
-        DebuggerUtility::var_dump($queryBuilder->getSQL(), 'SQL');
+        
         // Init
         $queryResult = $queryBuilder->execute();
         $dbCount = 0;
         $out = '';
         $tableHeader = '';
-        $listOnlyInSingleTableMode = $this->listOnlyInSingleTableMode && !$this->table;
-        DebuggerUtility::var_dump($queryResult, 'queryResult');
-        DebuggerUtility::var_dump($queryResult->fetch(), 'Fetching');
+        $listOnlyInSingleTableMode = $this->listOnlyInSingleTableMode && !$this->table;        
 
         if ($this->totalItems) {
             if ($listOnlyInSingleTableMode) {
@@ -259,6 +257,7 @@ class TestRecordList extends DatabaseRecordList {
                 }
                 $tableHeader .= $theData[$titleCol] . $collapseIcon;
             }
+            DebuggerUtility::var_dump($theData, 'theData');
             $rowOutput = '';            
             if (!$listOnlyInSingleTableMode || $this->table) {
                 // Fixing an order table for sortby tables
