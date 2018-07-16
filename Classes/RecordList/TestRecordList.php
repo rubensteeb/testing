@@ -376,6 +376,40 @@ class TestRecordList extends DatabaseRecordList {
                 // The header row for the table is now created:
                 $out .= $this->renderListHeader($table, $currentIdList);
             }
+            $collapseClass = $tableCollapsed && !$this->table ? 'collapse' : 'collapse in';
+            $dataState = $tableCollapsed && !$this->table ? 'collapsed' : 'expanded';
+
+            // The list of records is added after the header:
+            $out .= $rowOutput;
+            // ... and it is all wrapped in a table:
+            $out = '
+
+
+
+			<!--
+				DB listing of elements:	"' . htmlspecialchars($table) . '"
+			-->
+				<div class="panel panel-space panel-default recordlist">
+					<div class="panel-heading">
+					' . $tableHeader . '
+					</div>
+					<div class="' . $collapseClass . '" data-state="' . $dataState . '" id="recordlist-' . htmlspecialchars($table) . '">
+						<div class="table-fit">
+							<table data-table="' . htmlspecialchars($table) . '" class="table table-striped table-hover' . ($listOnlyInSingleTableMode ? ' typo3-dblist-overview' : '') . '">
+								' . $out . '
+							</table>
+						</div>
+					</div>
+				</div>
+			';
+            // Output csv if...
+            // This ends the page with exit.
+            if ($this->csvOutput) {
+                $this->outputCSV($table);
+            }
+        }
+        // Return content:
+        return $out;
 
         }
         
