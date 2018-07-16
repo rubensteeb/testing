@@ -420,7 +420,7 @@ class TestRecordList extends DatabaseRecordList {
             // The icon with link
             $toolTip = BackendUtility::getRecordToolTip($row, $table);
 
-            DebuggerUtility::var_dun($toolTip, 'tooltip');
+            DebuggerUtility::var_dump($toolTip, 'tooltip');
 
             $additionalStyle = $indent ? ' style="margin-left: ' . $indent . 'px;"' : '';
             $iconImg = '<span ' . $toolTip . ' ' . $additionalStyle . '>'
