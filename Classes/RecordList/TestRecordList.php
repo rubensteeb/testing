@@ -387,7 +387,7 @@ class TestRecordList extends DatabaseRecordList {
         {
             if (!is_array($row)) {
                 return '';
-            }
+            }            
             DebuggerUtility::var_dump($row, 'Row in Render List Row');
 
             $rowOutput = '';
