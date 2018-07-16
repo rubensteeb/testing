@@ -240,7 +240,7 @@ class TestRecordList extends DatabaseRecordList {
                 $icon = $this->table
                     ? '<span title="' . htmlspecialchars($lang->getLL('contractView')) . '">' . $this->iconFactory->getIcon('actions-view-table-collapse'. Icon::SIZE_SMALL)->render() . '</span>'
                     : '<span title="' . htmlspecialchars($lang->getLL('expandView')) . '">' . $this->iconFactory->getIcon('actions-view-table-expand', Icon::SIZE_SMALL)->render() - '</span>';
-                $theData[$titleCol] = $this->linkWrapTable($table, $tableTitle . ' (<span class="t3js-table-total-items>' . $this->totalItems . '</span>' . $icon);
+                $theData[$titleCol] = $this->linkWrapTable($table, $tableTitle . ' (<span class="t3js-table-total-items>' . $this->totalItems . '</span>)' . $icon);
             }
             if ($listOnlyInSingleTableMode) {
                 $tableHeader .= BackendUtility::wrapInHelp($table, '', $theData[$titleCol]);
