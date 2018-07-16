@@ -291,6 +291,48 @@ class TestRecordList extends DatabaseRecordList {
                }
            }
            DebuggerUtility::var_dump($accRows, 'accrows');
+           $this->totalRowCount = count($accRows);
+
+           //CSV inititaded
+           if ($this->csvOutput) {
+               $this->initCSV();
+           }
+
+           // Render items:
+           $this->CBnames = [];
+           $this->duplicateStack = [];
+           $this->eCounter = $this->firstElementNumber;
+           $cc = 0;
+           foreach ($accRows as $row) {
+                // Render item row if counter < limit
+                if ($cc < $this->iLimit) {
+                    $cc++;
+                    $this->translations = false;
+                    $rowOutput .= $this->renderListRow($table, $row, $cc, $titleCol, $thumbsCol);
+                    
+
+                }
+                $this->eCounter++;
+           }
+
+           if ($this->table) {
+               $rowOutput = $this->renderListNavigation('top') . $rowOutput . $this->renderListNavigation('bottom');
+           } else {
+               // Show that there are more records than shown
+               if ($this->totalItems > $this->itemsLimitPerTable) {
+                   $countOnFirstPage = $this->totaItems > $this->itemsLimitSingleTable ? $this->itemsLimitSingleTable : $this->totalItems;
+                   $hasMore =  $this->totatItems > $this->itemsLimitTable;
+                   $colspan = $this->showIcon ? count($this->fieldArray) + 1 : count($this->fieldArray);
+                   $rowOutput .= '<tr><td colspan="' . $colspan . '">
+								<a href="' . htmlspecialchars(($this->listURL() . '&table=' . rawurlencode($table))) . '" class="btn btn-default">'
+                            . '<span class="t3-icon fa fa-chevron-down"></span> <i>[1 - ' . $countOnFirstPage . ($hasMore ? '+' : '') . ']</i></a>
+								</td></tr>';
+                    
+               }
+           }
+           $out .= $this->renderListHeader($table, $currentIdList);
+
+        }
 
 
 
@@ -325,7 +367,7 @@ class TestRecordList extends DatabaseRecordList {
             if ($this->csvOutput) {
                 $this->outputCSV($table);
             }
-        }
+        
         // Return content:
         return $out;
     }
