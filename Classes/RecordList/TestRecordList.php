@@ -384,13 +384,13 @@ class TestRecordList extends DatabaseRecordList {
          * @see getTable()
          */
         public function renderListRow($table, $row, $cc, $titleCol, $thumbsCol, $indent = 0)
-        {
+        {            
             if (!is_array($row)) {
                 return '';
             }            
             DebuggerUtility::var_dump($row, 'Row in Render List Row');
-            $this->setFields[$table][] = '_CONTROL_';
-            $this->setFields[$table][] = '_CLIPBOARD_';
+            $this->fieldArray[] = '_CONTROL_';
+            $this->fieldArray[] = '_CLIPBOARD_';
             $rowOutput = '';
             $id_orig = null;
             // If in search mode, make sure the preview will show the correct page
