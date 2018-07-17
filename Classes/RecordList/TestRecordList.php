@@ -67,9 +67,7 @@ class TestRecordList extends DatabaseRecordList {
      * @return string HTML table with the listing for the record.
      */
     public function getTable($table, $id, $rowList = '')
-    {
-        DebuggerUtility::var_dump($this->languageService, 'LangService');
-        DebuggerUtility::var_dump($this, 'PageRenderer');
+    {       
         $this->pageRenderer->loadRequireJsModule('TYPO3\CMS\Backend\AjaxDataHandler', 'function() {console.log("Loaded AjaxDataHandler")}');
         $this->includeBackendLLLFiles();
         $rowListArray = GeneralUtility::trimExplode(',', $rowList, true);
