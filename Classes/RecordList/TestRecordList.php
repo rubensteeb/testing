@@ -710,7 +710,7 @@ class TestRecordList extends DatabaseRecordList {
             $historyAction = '<a class="btn btn-default" href="#" onclick="' . htmlspecialchars($onClick) . '" title="'
                 . htmlspecialchars($this->getLanguageService()->getLL('history')) . '">'
                 . $this->iconFactory->getIcon('actions-document-history-open', Icon::SIZE_SMALL)->render() . '</a>';
-            $this->addActionToCellGroup($cells, $historyAction, 'history');
+            // $this->addActionToCellGroup($cells, $historyAction, 'history');
             // Versioning:
             if (ExtensionManagementUtility::isLoaded('version') && ExtensionManagementUtility::isLoaded('compatibility7') && !ExtensionManagementUtility::isLoaded('workspaces')) {
                 $vers = BackendUtility::selectVersionsOfRecord($table, $row['uid'], 'uid', $this->getBackendUserAuthentication()->workspace, false, $row);
