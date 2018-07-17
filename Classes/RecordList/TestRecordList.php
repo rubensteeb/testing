@@ -962,7 +962,8 @@ class TestRecordList extends DatabaseRecordList {
      * @return void
      */
     protected function includeBackendLLLFiles() {        
-        $this->languageService->includeLLFile('EXT:backend/Resources/Private/Language/locallang_layout.xlf');        
+        $this->languageService->includeLLFile('EXT:backend/Resources/Private/Language/locallang_layout.xlf'); 
+        $this->languageService->includeLLFile('EXT:lang/Resources/Private/Language/locallang_mod_web_list.xlf');
     }
 
 }
