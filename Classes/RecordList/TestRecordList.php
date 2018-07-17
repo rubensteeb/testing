@@ -639,9 +639,9 @@ class TestRecordList extends DatabaseRecordList {
      * @return string HTML table with the control panel (unless disabled)
      */
     public function makeControl($table, $row)
-    {    
-        
-        
+    {
+
+        $module = $this->getModule();        
         $rowUid = $row['uid'];
         if (ExtensionManagementUtility::isLoaded('version') && isset($row['_ORIG_uid'])) {
             $rowUid = $row['_ORIG_uid'];
