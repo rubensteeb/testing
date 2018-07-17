@@ -1,10 +1,8 @@
 <?php
 namespace RubenSteeb\Testing\RecordList;
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Recordlist\RecordList\DatabaseRecordList;
-use TYPO3\CMS\Lang\LanguageService;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryHelper;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
@@ -15,6 +13,13 @@ use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
+use TYPO3\CMS\Core\Type\Bitmask\Permission;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Lang\LanguageService;
+use TYPO3\CMS\Recordlist\RecordList\DatabaseRecordList;
+
+
 
 /** DEBUG */
 use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
