@@ -688,7 +688,7 @@ class TestRecordList extends DatabaseRecordList {
         } else {
             $editAction = $this->spaceIcon;
         }
-        $this->addActionToCellGroup($cells, $editAction, 'edit');
+        // $this->addActionToCellGroup($cells, $editAction, 'edit');
         // "Info": (All records)
         $onClick = 'top.launchView(' . GeneralUtility::quoteJSvalue($table) . ', ' . (int)$row['uid'] . '); return false;';
         $viewBigAction = '<a class="btn btn-default" href="#" onclick="' . htmlspecialchars($onClick) . '" title="' . htmlspecialchars($this->getLanguageService()->getLL('showInfo')) . '">'
