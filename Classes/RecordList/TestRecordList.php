@@ -40,7 +40,7 @@ class TestRecordList extends DatabaseRecordList {
     }
 
     public function __construct() {
-        parent::__construct();        
+        parent::__construct();            
         
     }
 
@@ -55,6 +55,7 @@ class TestRecordList extends DatabaseRecordList {
      */
     public function getTable($table, $id, $rowList = '')
     {
+        $this->includeBackendLLLFiles();
         $rowListArray = GeneralUtility::trimExplode(',', $rowList, true);
         // if no columns have been specified, show description (if configured)
         if (!empty($GLOBALS['TCA'][$table]['ctrl']['descriptionColumn']) && empty($rowListArray)) {
@@ -946,11 +947,22 @@ class TestRecordList extends DatabaseRecordList {
     }
 
     /**
+     * Get Current LanguageService
+     * 
      * @return LanguageService
      */
     public function getLanguageService()
     {
         return $this->languageService;
+    }
+
+    /**
+     * Include Layout XLF file from EXT:backend
+     * 
+     * @return void
+     */
+    protected function includeBackendLLLFiles() {
+        $this->languageService->includeLLFile('EXT::backend/Resources/Private/Language/locallang_layout.xlf');
     }
 
 }
