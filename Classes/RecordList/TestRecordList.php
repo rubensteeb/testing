@@ -945,6 +945,13 @@ class TestRecordList extends DatabaseRecordList {
         return $output;
     }
 
+    /**
+     * @return LanguageService
+     */
+    public function getLanguageService()
+    {
+        return $this->languageService;
+    }
 
 }
 
