@@ -13,6 +13,7 @@ use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -26,6 +27,11 @@ use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 class TestRecordList extends DatabaseRecordList {
 
+    /**
+     * @var PageRenderer
+     */
+    protected $pageRenderer;
+
 
     /**
      * @var LanguageService;
@@ -37,6 +43,13 @@ class TestRecordList extends DatabaseRecordList {
      */
     public function injectLanguageService(LanguageService $languageService) {
         $this->languageService = $languageService;
+    }
+
+    /**
+     * @param PageRenderer
+     */
+    public function injectPageRenderer(PageRenderer $pageRenderer) {
+        $this->pageRenderer = $pageRenderer;
     }
 
     public function __construct() {
@@ -56,6 +69,7 @@ class TestRecordList extends DatabaseRecordList {
     public function getTable($table, $id, $rowList = '')
     {
         DebuggerUtility::var_dump($this->getPageRenderer(), 'PageRenderer');
+        $this->pageRenderer->loadRequireJsModule('TYPO3\CMS\Backend\AjaxDataHandler', 'function() {console.log("Loaded AjaxDataHandler")}');
         $this->includeBackendLLLFiles();
         $rowListArray = GeneralUtility::trimExplode(',', $rowList, true);
         // if no columns have been specified, show description (if configured)
