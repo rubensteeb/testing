@@ -629,7 +629,8 @@ class TestRecordList extends DatabaseRecordList {
 
         return $queryBuilder;
     }
-    /*********************************
+
+        /*********************************
      *
      * Rendering of various elements
      *
@@ -939,144 +940,6 @@ class TestRecordList extends DatabaseRecordList {
         return $output;
     }
 
-    /**
-     * Creates the clipboard panel for a single record in the listing.
-     *
-     * @param string $table The table
-     * @param mixed[] $row The record for which to make the clipboard panel.
-     * @throws \UnexpectedValueException
-     * @return string HTML table with the clipboard panel (unless disabled)
-     */
-    public function makeClip($table, $row)
-    {
-        // Return blank, if disabled:
-        if (!$this->getModule()->MOD_SETTINGS['clipBoard']) {
-            return '';
-        }
-        $cells = [];
-        $cells['pasteAfter'] = ($cells['pasteInto'] = $this->spaceIcon);
-        //enables to hide the copy, cut and paste icons for localized records - doesn't make much sense to perform these options for them
-        $isL10nOverlay = $this->localizationView && $table !== 'pages_language_overlay' && $row[$GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField']] != 0;
-        // Return blank, if disabled:
-        // Whether a numeric clipboard pad is active or the normal pad we will see different content of the panel:
-        // For the "Normal" pad:
-        if ($this->clipObj->current === 'normal') {
-            // Show copy/cut icons:
-            $isSel = (string)$this->clipObj->isSelected($table, $row['uid']);
-            if ($isL10nOverlay || !$this->overlayEditLockPermissions($table, $row)) {
-                $cells['copy'] = $this->spaceIcon;
-                $cells['cut'] = $this->spaceIcon;
-            } else {
-                $copyIcon = $this->iconFactory->getIcon('actions-edit-copy', Icon::SIZE_SMALL);
-                $cutIcon = $this->iconFactory->getIcon('actions-edit-cut', Icon::SIZE_SMALL);
-
-                if ($isSel === 'copy') {
-                    $copyIcon = $this->iconFactory->getIcon('actions-edit-copy-release', Icon::SIZE_SMALL);
-                } elseif ($isSel === 'cut') {
-                    $cutIcon = $this->iconFactory->getIcon('actions-edit-cut-release', Icon::SIZE_SMALL);
-                }
-
-                $cells['copy'] = '<a class="btn btn-default" href="#" onclick="'
-                    . htmlspecialchars('return jumpSelf(' . GeneralUtility::quoteJSvalue($this->clipObj->selUrlDB($table, $row['uid'], 1, ($isSel === 'copy'), ['returnUrl' => ''])) . ');')
-                    . '" title="' . htmlspecialchars($this->getLanguageService()->sL('LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:cm.copy')) . '">'
-                    . $copyIcon->render() . '</a>';
-
-                // Check permission to cut page or content
-                if ($table === 'pages') {
-                    $localCalcPerms = $this->getBackendUserAuthentication()->calcPerms(BackendUtility::getRecord('pages', $row['uid']));
-                    $permsEdit = $localCalcPerms & Permission::PAGE_EDIT;
-                } else {
-                    $permsEdit = $this->calcPerms & Permission::CONTENT_EDIT;
-                }
-                $permsEdit = $this->overlayEditLockPermissions($table, $row, $permsEdit);
-
-                // If the listed table is 'pages' we have to request the permission settings for each page:
-                if ($table === 'pages') {
-                    if ($permsEdit) {
-                        $cells['cut'] = '<a class="btn btn-default" href="#" onclick="'
-                        . htmlspecialchars('return jumpSelf(' . GeneralUtility::quoteJSvalue($this->clipObj->selUrlDB($table, $row['uid'], 0, ($isSel === 'cut'), ['returnUrl' => ''])) . ');')
-                        . '" title="' . htmlspecialchars($this->getLanguageService()->sL('LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:cm.cut')) . '">'
-                        . $cutIcon->render() . '</a>';
-                    } else {
-                        $cells['cut'] = $this->spaceIcon;
-                    }
-                } else {
-                    if ($table !== 'pages' && $this->calcPerms & Permission::CONTENT_EDIT) {
-                        $cells['cut'] = '<a class="btn btn-default" href="#" onclick="'
-                        . htmlspecialchars('return jumpSelf(' . GeneralUtility::quoteJSvalue($this->clipObj->selUrlDB($table, $row['uid'], 0, ($isSel === 'cut'), ['returnUrl' => ''])) . ');')
-                        . '" title="' . htmlspecialchars($this->getLanguageService()->sL('LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:cm.cut')) . '">'
-                        . $cutIcon->render() . '</a>';
-                    } else {
-                        $cells['cut'] = $this->spaceIcon;
-                    }
-                }
-            }
-        } else {
-            // For the numeric clipboard pads (showing checkboxes where one can select elements on/off)
-            // Setting name of the element in ->CBnames array:
-            $n = $table . '|' . $row['uid'];
-            $this->CBnames[] = $n;
-            // Check if the current element is selected and if so, prepare to set the checkbox as selected:
-            $checked = $this->clipObj->isSelected($table, $row['uid']) ? 'checked="checked" ' : '';
-            // If the "duplicateField" value is set then select all elements which are duplicates...
-            if ($this->duplicateField && isset($row[$this->duplicateField])) {
-                $checked = '';
-                if (in_array($row[$this->duplicateField], $this->duplicateStack)) {
-                    $checked = 'checked="checked" ';
-                }
-                $this->duplicateStack[] = $row[$this->duplicateField];
-            }
-            // Adding the checkbox to the panel:
-            $cells['select'] = $isL10nOverlay
-                ? $this->spaceIcon
-                : '<input type="hidden" name="CBH[' . $n . ']" value="0" /><label class="btn btn-default btn-checkbox"><input type="checkbox"'
-                    . ' name="CBC[' . $n . ']" value="1" ' . $checked . '/><span class="t3-icon fa"></span></label>';
-        }
-        // Now, looking for selected elements from the current table:
-        $elFromTable = $this->clipObj->elFromTable($table);
-        if (!empty($elFromTable) && $GLOBALS['TCA'][$table]['ctrl']['sortby']) {
-            // IF elements are found, they can be individually ordered and are not locked by editlock, then add a "paste after" icon:
-            $cells['pasteAfter'] = $isL10nOverlay || !$this->overlayEditLockPermissions($table, $row)
-                ? $this->spaceIcon
-                : '<a class="btn btn-default t3js-modal-trigger"'
-                    . ' href="' . htmlspecialchars($this->clipObj->pasteUrl($table, -$row['uid'])) . '"'
-                    . ' title="' . htmlspecialchars($this->getLanguageService()->getLL('clip_pasteAfter')) . '"'
-                    . ' data-title="' . htmlspecialchars($this->getLanguageService()->getLL('clip_pasteAfter')) . '"'
-                    . ' data-content="' . htmlspecialchars($this->clipObj->confirmMsgText($table, $row, 'after', $elFromTable)) . '"'
-                    . ' data-severity="warning">'
-                    . $this->iconFactory->getIcon('actions-document-paste-after', Icon::SIZE_SMALL)->render() . '</a>';
-        }
-        // Now, looking for elements in general:
-        $elFromTable = $this->clipObj->elFromTable('');
-        if ($table === 'pages' && !empty($elFromTable)) {
-            $cells['pasteInto'] = '<a class="btn btn-default t3js-modal-trigger"'
-                . ' href="' . htmlspecialchars($this->clipObj->pasteUrl('', $row['uid'])) . '"'
-                . ' title="' . htmlspecialchars($this->getLanguageService()->getLL('clip_pasteInto')) . '"'
-                . ' data-title="' . htmlspecialchars($this->getLanguageService()->getLL('clip_pasteInto')) . '"'
-                . ' data-content="' . htmlspecialchars($this->clipObj->confirmMsgText($table, $row, 'into', $elFromTable)) . '"'
-                . ' data-severity="warning">'
-                . $this->iconFactory->getIcon('actions-document-paste-into', Icon::SIZE_SMALL)->render() . '</a>';
-        }
-        /**
-         * @hook makeClip: Allows to change clip-icons of records in list-module
-         * @usage This hook method gets passed the current $cells array as third parameter.
-         *        This array contains values for the clipboard icons generated for each record in Web>List.
-         *        Each array entry is accessible by an index-key.
-         *        The order of the icons is depending on the order of those array entries.
-         */
-        if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.db_list_extra.inc']['actions'])) {
-            foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.db_list_extra.inc']['actions'] as $classData) {
-                $hookObject = GeneralUtility::getUserObj($classData);
-                if (!$hookObject instanceof RecordListHookInterface) {
-                    throw new \UnexpectedValueException($classData . ' must implement interface ' . RecordListHookInterface::class, 1195567845);
-                }
-                $cells = $hookObject->makeClip($table, $row, $cells, $this);
-            }
-        }
-        // Compile items into a DIV-element:
-        return '<!-- CLIPBOARD PANEL: ' . $table . ':' . $row['uid'] . ' -->
-			<div class="btn-group" role="group">' . implode('', $cells) . '</div>';
-    }
 
 }
 
