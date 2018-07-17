@@ -55,6 +55,7 @@ class TestRecordList extends DatabaseRecordList {
      */
     public function getTable($table, $id, $rowList = '')
     {
+        DebuggerUtilitly::var_dump($this->getPageRenderer(), 'PageRenderer');
         $this->includeBackendLLLFiles();
         $rowListArray = GeneralUtility::trimExplode(',', $rowList, true);
         // if no columns have been specified, show description (if configured)
