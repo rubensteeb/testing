@@ -388,7 +388,7 @@ class TestRecordList extends DatabaseRecordList {
             if (!is_array($row)) {
                 return '';
             }            
-            DebuggerUtility::var_dump($row, 'Row in Render List Row');
+            
             $this->fieldArray[] = '_CONTROL_';
             $this->fieldArray[] = '_CLIPBOARD_';
             $rowOutput = '';
@@ -421,7 +421,7 @@ class TestRecordList extends DatabaseRecordList {
             // The icon with link
             $toolTip = BackendUtility::getRecordToolTip($row, $table);
 
-            DebuggerUtility::var_dump($this->fieldArray, 'fieldArray');
+            
 
             $additionalStyle = $indent ? ' style="margin-left: ' . $indent . 'px;"' : '';
             $iconImg = '<span ' . $toolTip . ' ' . $additionalStyle . '>'
@@ -535,7 +535,7 @@ class TestRecordList extends DatabaseRecordList {
                 },
                 $tagAttributes
             );
-            DebuggerUtility::var_dump($theData, 'TheData in Render List Row');
+            
             $rowOutput .= $this->addElement(1, $theIcon, $theData, GeneralUtility::implodeAttributes($tagAttributes, true));
             // Finally, return table row element:
             return $rowOutput;
