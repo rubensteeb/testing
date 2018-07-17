@@ -68,7 +68,7 @@ class TestRecordList extends DatabaseRecordList {
      */
     public function getTable($table, $id, $rowList = '')
     {       
-        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Backend/AjaxDataHandler', 'function() {console.log("Loaded AjaxDataHandler")}');
+        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Backend/AjaxDataHandler');
         $this->includeBackendLLLFiles();
         $rowListArray = GeneralUtility::trimExplode(',', $rowList, true);
         // if no columns have been specified, show description (if configured)

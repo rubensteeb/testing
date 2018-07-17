@@ -93,6 +93,7 @@ class TestRecordListViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Be\AbstractB
      */
     public function render()
     {
+        \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($this, 'THIS ViewHelper');
         $tableName = $this->arguments['tableName'];
         $fieldList = $this->arguments['fieldList'];
         $storagePid = $this->arguments['storagePid'];
