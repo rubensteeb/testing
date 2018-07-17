@@ -962,7 +962,9 @@ class TestRecordList extends DatabaseRecordList {
      * @return void
      */
     protected function includeBackendLLLFiles() {
+        DebuggerUtility::var_dump('HERE', 'INSIDE BACKENDLLLFILES');
         $this->languageService->includeLLFile('EXT::backend/Resources/Private/Language/locallang_layout.xlf');
+        DebuggerUtility::var_dump($this->languageService->getLL('deleteWarning'), 'DelMSG');
     }
 
 }
