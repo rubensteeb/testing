@@ -640,7 +640,9 @@ class TestRecordList extends DatabaseRecordList {
      */
     public function makeControl($table, $row)
     {
+
         $module = $this->getModule();
+        DebuggerUtility::var_dump($GLOBALS, 'GLOBALS');
         DebuggerUtility::var_dump($module, 'Module');
         $rowUid = $row['uid'];
         if (ExtensionManagementUtility::isLoaded('version') && isset($row['_ORIG_uid'])) {
