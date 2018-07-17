@@ -726,7 +726,7 @@ class TestRecordList extends DatabaseRecordList {
                     $versionAction = '<a class="btn btn-default" href="' . htmlspecialchars($href) . '" title="'
                         . htmlspecialchars($this->getLanguageService()->getLL('displayVersions')) . '">'
                         . $this->iconFactory->getIcon('actions-version-page-open', Icon::SIZE_SMALL)->render() . '</a>';
-                    // $this->addActionToCellGroup($cells, $versionAction, 'version');
+                    $this->addActionToCellGroup($cells, $versionAction, 'version');
                 }
             }
             // "Edit Perms" link:
@@ -734,7 +734,7 @@ class TestRecordList extends DatabaseRecordList {
                 $href = BackendUtility::getModuleUrl('system_BeuserTxPermission') . '&id=' . $row['uid'] . '&tx_beuser_system_beusertxpermission[action]=edit' . $this->makeReturnUrl();
                 $permsAction = '<a class="btn btn-default" href="' . htmlspecialchars($href) . '" title="'
                     . htmlspecialchars($this->getLanguageService()->getLL('permissions')) . '">'
-                    . $this->iconFactory->getIcon('actions-lock', Icon::SIZE_SMALL)->render() . '</a>';
+                    . $this->iconFactory->getIcon('actions-lock', Icon::SIZE_SMALL)->render() . '</a>';                    
                 $this->addActionToCellGroup($cells, $permsAction, 'perms');
             }
             // "New record after" link (ONLY if the records in the table are sorted by a "sortby"-row
@@ -818,7 +818,7 @@ class TestRecordList extends DatabaseRecordList {
             if ($permsEdit && !$disableDelete && ($table === 'pages' && $localCalcPerms & Permission::PAGE_DELETE || $table !== 'pages' && $this->calcPerms & Permission::CONTENT_EDIT)) {
                 // Check if the record version is in "deleted" state, because that will switch the action to "restore"
                 if ($this->getBackendUserAuthentication()->workspace > 0 && isset($row['t3ver_state']) && (int)$row['t3ver_state'] === 2) {
-                    $actionName = 'restore';
+                    $actionName = 'restore';  
                     $refCountMsg = '';
                 } else {
                     $actionName = 'delete';
@@ -852,6 +852,7 @@ class TestRecordList extends DatabaseRecordList {
             } else {
                 $deleteAction = $this->spaceIcon;
             }
+            DebuggerUtility::var_dump($deleteAction, 'DeleteAction in Test Record List');
             $this->addActionToCellGroup($cells, $deleteAction, 'delete');
             // "Levels" links: Moving pages into new levels...
             if ($permsEdit && $table === 'pages' && !$this->searchLevels) {
