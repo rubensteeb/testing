@@ -625,8 +625,254 @@ class TestRecordList extends DatabaseRecordList {
         return $queryBuilder;
     }
 
+    /**
+     * Creates the control panel for a single record in the listing.
+     *
+     * @param string $table The table
+     * @param mixed[] $row The record for which to make the control panel.
+     * @throws \UnexpectedValueException
+     * @return string HTML table with the control panel (unless disabled)
+     */
+    public function makeControl($table, $row)
+    {
+        $module = $this->getModule();
+        DebuggerUtility::var_dump($module, 'Module');
+        $rowUid = $row['uid'];
+        if (ExtensionManagementUtility::isLoaded('version') && isset($row['_ORIG_uid'])) {
+            $rowUid = $row['_ORIG_uid'];
+        }
+        $cells = [
+            'primary' => [],
+            'secondary' => []
+        ];
+        // If the listed table is 'pages' we have to request the permission settings for each page:
+        $localCalcPerms = 0;
+        if ($table === 'pages') {
+            $localCalcPerms = $this->getBackendUserAuthentication()->calcPerms(BackendUtility::getRecord('pages', $row['uid']));
+        }
+        $permsEdit = $table === 'pages'
+                     && $this->getBackendUserAuthentication()->checkLanguageAccess(0)
+                     && $localCalcPerms & Permission::PAGE_EDIT
+                     || $table !== 'pages'
+                        && $this->calcPerms & Permission::CONTENT_EDIT
+                        && $this->getBackendUserAuthentication()->recordEditAccessInternals($table, $row);
+        $permsEdit = $this->overlayEditLockPermissions($table, $row, $permsEdit);
+        // "Show" link (only pages and tt_content elements)
+        if ($table === 'pages' || $table === 'tt_content') {
+            $onClick = $this->getOnClickForRow($table, $row);
+            $viewAction = '<a class="btn btn-default" href="#" onclick="'
+                . htmlspecialchars($onClick) . '" title="' . htmlspecialchars($this->getLanguageService()->sL('LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:labels.showPage')) . '">'
+                . $this->iconFactory->getIcon('actions-view', Icon::SIZE_SMALL)->render() . '</a>';
+            $this->addActionToCellGroup($cells, $viewAction, 'view');
+        }
+        // "Edit" link: ( Only if permissions to edit the page-record of the content of the parent page ($this->id)
+        if ($permsEdit) {
+            $params = '&edit[' . $table . '][' . $row['uid'] . ']=edit';
+            $iconIdentifier = 'actions-open';
+            if ($table === 'pages') {
+                $iconIdentifier = 'actions-page-open';
+            }
+            $overlayIdentifier = !$this->isEditable($table) ? 'overlay-readonly' : null;
+            $editAction = '<a class="btn btn-default" href="#" onclick="' . htmlspecialchars(BackendUtility::editOnClick($params, '', -1))
+                . '" title="' . htmlspecialchars($this->getLanguageService()->getLL('edit')) . '">' . $this->iconFactory->getIcon($iconIdentifier, Icon::SIZE_SMALL, $overlayIdentifier)->render() . '</a>';
+        } else {
+            $editAction = $this->spaceIcon;
+        }
+        $this->addActionToCellGroup($cells, $editAction, 'edit');
+        // "Info": (All records)
+        $onClick = 'top.launchView(' . GeneralUtility::quoteJSvalue($table) . ', ' . (int)$row['uid'] . '); return false;';
+        $viewBigAction = '<a class="btn btn-default" href="#" onclick="' . htmlspecialchars($onClick) . '" title="' . htmlspecialchars($this->getLanguageService()->getLL('showInfo')) . '">'
+            . $this->iconFactory->getIcon('actions-document-info', Icon::SIZE_SMALL)->render() . '</a>';
+        $this->addActionToCellGroup($cells, $viewBigAction, 'viewBig');
+        // "Move" wizard link for pages/tt_content elements:
+        if ($permsEdit && ($table === 'tt_content' || $table === 'pages')) {
+            $onClick = 'return jumpExt(' . GeneralUtility::quoteJSvalue(BackendUtility::getModuleUrl('move_element') . '&table=' . $table . '&uid=' . $row['uid']) . ');';
+            $linkTitleLL = htmlspecialchars($this->getLanguageService()->getLL('move_' . ($table === 'tt_content' ? 'record' : 'page')));
+            $icon = ($table === 'pages' ? $this->iconFactory->getIcon('actions-page-move', Icon::SIZE_SMALL) : $this->iconFactory->getIcon('actions-document-move', Icon::SIZE_SMALL));
+            $moveAction = '<a class="btn btn-default" href="#" onclick="' . htmlspecialchars($onClick) . '" title="' . $linkTitleLL . '">' . $icon->render() . '</a>';
+            $this->addActionToCellGroup($cells, $moveAction, 'move');
+        }
+        // If the table is NOT a read-only table, then show these links:
+        if ($this->isEditable($table)) {
+            // "Revert" link (history/undo)
+            $moduleUrl = BackendUtility::getModuleUrl('record_history', ['element' => $table . ':' . $row['uid']]);
+            $onClick = 'return jumpExt(' . GeneralUtility::quoteJSvalue($moduleUrl) . ',\'#latest\');';
+            $historyAction = '<a class="btn btn-default" href="#" onclick="' . htmlspecialchars($onClick) . '" title="'
+                . htmlspecialchars($this->getLanguageService()->getLL('history')) . '">'
+                . $this->iconFactory->getIcon('actions-document-history-open', Icon::SIZE_SMALL)->render() . '</a>';
+            $this->addActionToCellGroup($cells, $historyAction, 'history');
+            // Versioning:
+            if (ExtensionManagementUtility::isLoaded('version') && ExtensionManagementUtility::isLoaded('compatibility7') && !ExtensionManagementUtility::isLoaded('workspaces')) {
+                $vers = BackendUtility::selectVersionsOfRecord($table, $row['uid'], 'uid', $this->getBackendUserAuthentication()->workspace, false, $row);
+                // If table can be versionized.
+                if (is_array($vers)) {
+                    $href = BackendUtility::getModuleUrl('web_txversionM1', [
+                        'table' => $table, 'uid' => $row['uid']
+                    ]);
+                    $versionAction = '<a class="btn btn-default" href="' . htmlspecialchars($href) . '" title="'
+                        . htmlspecialchars($this->getLanguageService()->getLL('displayVersions')) . '">'
+                        . $this->iconFactory->getIcon('actions-version-page-open', Icon::SIZE_SMALL)->render() . '</a>';
+                    $this->addActionToCellGroup($cells, $versionAction, 'version');
+                }
+            }
+            // "Edit Perms" link:
+            if ($table === 'pages' && $this->getBackendUserAuthentication()->check('modules', 'system_BeuserTxPermission') && ExtensionManagementUtility::isLoaded('beuser')) {
+                $href = BackendUtility::getModuleUrl('system_BeuserTxPermission') . '&id=' . $row['uid'] . '&tx_beuser_system_beusertxpermission[action]=edit' . $this->makeReturnUrl();
+                $permsAction = '<a class="btn btn-default" href="' . htmlspecialchars($href) . '" title="'
+                    . htmlspecialchars($this->getLanguageService()->getLL('permissions')) . '">'
+                    . $this->iconFactory->getIcon('actions-lock', Icon::SIZE_SMALL)->render() . '</a>';
+                $this->addActionToCellGroup($cells, $permsAction, 'perms');
+            }
+            // "New record after" link (ONLY if the records in the table are sorted by a "sortby"-row
+            // or if default values can depend on previous record):
+            if (($GLOBALS['TCA'][$table]['ctrl']['sortby'] || $GLOBALS['TCA'][$table]['ctrl']['useColumnsForDefaultValues']) && $permsEdit) {
+                if ($table !== 'pages' && $this->calcPerms & Permission::CONTENT_EDIT || $table === 'pages' && $this->calcPerms & Permission::PAGE_NEW) {
+                    if ($this->showNewRecLink($table)) {
+                        $params = '&edit[' . $table . '][' . -($row['_MOVE_PLH'] ? $row['_MOVE_PLH_uid'] : $row['uid']) . ']=new';
+                        $icon = ($table === 'pages' ? $this->iconFactory->getIcon('actions-page-new', Icon::SIZE_SMALL) : $this->iconFactory->getIcon('actions-add', Icon::SIZE_SMALL));
+                        $titleLabel = 'new';
+                        if ($GLOBALS['TCA'][$table]['ctrl']['sortby']) {
+                            $titleLabel .= ($table === 'pages' ? 'Page' : 'Record');
+                        }
+                        $newAction = '<a class="btn btn-default" href="#" onclick="' . htmlspecialchars(BackendUtility::editOnClick($params, '', -1))
+                            . '" title="' . htmlspecialchars($this->getLanguageService()->getLL($titleLabel)) . '">'
+                            . $icon->render() . '</a>';
+                        $this->addActionToCellGroup($cells, $newAction, 'new');
+                    }
+                }
+            }
+            // "Up/Down" links
+            if ($permsEdit && $GLOBALS['TCA'][$table]['ctrl']['sortby'] && !$this->sortField && !$this->searchLevels) {
+                if (isset($this->currentTable['prev'][$row['uid']])) {
+                    // Up
+                    $params = '&cmd[' . $table . '][' . $row['uid'] . '][move]=' . $this->currentTable['prev'][$row['uid']];
+                    $moveUpAction = '<a class="btn btn-default" href="#" onclick="'
+                        . htmlspecialchars('return jumpToUrl(' . BackendUtility::getLinkToDataHandlerAction($params, -1) . ');')
+                        . '" title="' . htmlspecialchars($this->getLanguageService()->getLL('moveUp')) . '">'
+                        . $this->iconFactory->getIcon('actions-move-up', Icon::SIZE_SMALL)->render() . '</a>';
+                } else {
+                    $moveUpAction = $this->spaceIcon;
+                }
+                $this->addActionToCellGroup($cells, $moveUpAction, 'moveUp');
 
+                if ($this->currentTable['next'][$row['uid']]) {
+                    // Down
+                    $params = '&cmd[' . $table . '][' . $row['uid'] . '][move]=' . $this->currentTable['next'][$row['uid']];
+                    $moveDownAction = '<a class="btn btn-default" href="#" onclick="'
+                        . htmlspecialchars('return jumpToUrl(' . BackendUtility::getLinkToDataHandlerAction($params, -1) . ');')
+                        . '" title="' . htmlspecialchars($this->getLanguageService()->getLL('moveDown')) . '">'
+                        . $this->iconFactory->getIcon('actions-move-down', Icon::SIZE_SMALL)->render() . '</a>';
+                } else {
+                    $moveDownAction = $this->spaceIcon;
+                }
+                $this->addActionToCellGroup($cells, $moveDownAction, 'moveDown');
+            }
+            // "Hide/Unhide" links:
+            $hiddenField = $GLOBALS['TCA'][$table]['ctrl']['enablecolumns']['disabled'];
+
+            if (
+                !empty($GLOBALS['TCA'][$table]['columns'][$hiddenField])
+                && (empty($GLOBALS['TCA'][$table]['columns'][$hiddenField]['exclude'])
+                    || $this->getBackendUserAuthentication()->check('non_exclude_fields', $table . ':' . $hiddenField))
+            ) {
+                if (!$permsEdit || $this->isRecordCurrentBackendUser($table, $row)) {
+                    $hideAction = $this->spaceIcon;
+                } else {
+                    $hideTitle = htmlspecialchars($this->getLanguageService()->getLL('hide' . ($table === 'pages' ? 'Page' : '')));
+                    $unhideTitle = htmlspecialchars($this->getLanguageService()->getLL('unHide' . ($table === 'pages' ? 'Page' : '')));
+                    if ($row[$hiddenField]) {
+                        $params = 'data[' . $table . '][' . $rowUid . '][' . $hiddenField . ']=0';
+                        $hideAction = '<a class="btn btn-default t3js-record-hide" data-state="hidden" href="#"'
+                                      . ' data-params="' . htmlspecialchars($params) . '"'
+                                      . ' title="' . $unhideTitle . '"'
+                                      . ' data-toggle-title="' . $hideTitle . '">'
+                                      . $this->iconFactory->getIcon('actions-edit-unhide', Icon::SIZE_SMALL)->render() . '</a>';
+                    } else {
+                        $params = 'data[' . $table . '][' . $rowUid . '][' . $hiddenField . ']=1';
+                        $hideAction = '<a class="btn btn-default t3js-record-hide" data-state="visible" href="#"'
+                                      . ' data-params="' . htmlspecialchars($params) . '"'
+                                      . ' title="' . $hideTitle . '"'
+                                      . ' data-toggle-title="' . $unhideTitle . '">'
+                                      . $this->iconFactory->getIcon('actions-edit-hide', Icon::SIZE_SMALL)->render() . '</a>';
+                    }
+                }
+                $this->addActionToCellGroup($cells, $hideAction, 'hide');
+            }
+            // "Delete" link:
+            $disableDeleteTS = $this->getBackendUserAuthentication()->getTSConfig('options.disableDelete');
+            $disableDelete = (bool) trim(isset($disableDeleteTS['properties'][$table]) ? $disableDeleteTS['properties'][$table] : $disableDeleteTS['value']);
+            if ($permsEdit && !$disableDelete && ($table === 'pages' && $localCalcPerms & Permission::PAGE_DELETE || $table !== 'pages' && $this->calcPerms & Permission::CONTENT_EDIT)) {
+                // Check if the record version is in "deleted" state, because that will switch the action to "restore"
+                if ($this->getBackendUserAuthentication()->workspace > 0 && isset($row['t3ver_state']) && (int)$row['t3ver_state'] === 2) {
+                    $actionName = 'restore';
+                    $refCountMsg = '';
+                } else {
+                    $actionName = 'delete';
+                    $refCountMsg = BackendUtility::referenceCount(
+                        $table,
+                        $row['uid'],
+                        ' ' . $this->getLanguageService()->sL('LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:labels.referencesToRecord'),
+                        $this->getReferenceCount($table, $row['uid'])
+                    ) . BackendUtility::translationCount(
+                            $table,
+                            $row['uid'],
+                        ' ' . $this->getLanguageService()->sL('LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:labels.translationsOfRecord')
+                    );
+                }
+
+                if ($this->isRecordCurrentBackendUser($table, $row)) {
+                    $deleteAction = $this->spaceIcon;
+                } else {
+                    $title = BackendUtility::getRecordTitle($table, $row);
+                    $warningText = $this->getLanguageService()->getLL($actionName . 'Warning') . ' "' . $title . '" ' . '[' . $table . ':' . $row['uid'] . ']' . $refCountMsg;
+
+                    $params = 'cmd[' . $table . '][' . $row['uid'] . '][delete]=1';
+                    $icon = $this->iconFactory->getIcon('actions-edit-' . $actionName, Icon::SIZE_SMALL)->render();
+                    $linkTitle = htmlspecialchars($this->getLanguageService()->getLL($actionName));
+                    $deleteAction = '<a class="btn btn-default t3js-record-delete" href="#" '
+                                    . ' data-l10parent="' . htmlspecialchars($row['l10n_parent']) . '"'
+                                    . ' data-params="' . htmlspecialchars($params) . '" data-title="' . htmlspecialchars($title) . '"'
+                                    . ' data-message="' . htmlspecialchars($warningText) . '" title="' . $linkTitle . '"'
+                                    . '>' . $icon . '</a>';
+                }
+            } else {
+                $deleteAction = $this->spaceIcon;
+            }
+            $this->addActionToCellGroup($cells, $deleteAction, 'delete');
+            // "Levels" links: Moving pages into new levels...
+            if ($permsEdit && $table === 'pages' && !$this->searchLevels) {
+                // Up (Paste as the page right after the current parent page)
+                if ($this->calcPerms & Permission::PAGE_NEW) {
+                    $params = '&cmd[' . $table . '][' . $row['uid'] . '][move]=' . -$this->id;
+                    $moveLeftAction = '<a class="btn btn-default" href="#" onclick="'
+                        . htmlspecialchars('return jumpToUrl(' . BackendUtility::getLinkToDataHandlerAction($params, -1) . ');')
+                        . '" title="' . htmlspecialchars($this->getLanguageService()->getLL('prevLevel')) . '">'
+                        . $this->iconFactory->getIcon('actions-move-left', Icon::SIZE_SMALL)->render() . '</a>';
+                    $this->addActionToCellGroup($cells, $moveLeftAction, 'moveLeft');
+                }
+                // Down (Paste as subpage to the page right above)
+                if ($this->currentTable['prevUid'][$row['uid']]) {
+                    $localCalcPerms = $this->getBackendUserAuthentication()->calcPerms(BackendUtility::getRecord('pages', $this->currentTable['prevUid'][$row['uid']]));
+                    if ($localCalcPerms & Permission::PAGE_NEW) {
+                        $params = '&cmd[' . $table . '][' . $row['uid'] . '][move]=' . $this->currentTable['prevUid'][$row['uid']];
+                        $moveRightAction = '<a class="btn btn-default" href="#" onclick="'
+                            . htmlspecialchars('return jumpToUrl(' . BackendUtility::getLinkToDataHandlerAction($params, -1) . ');')
+                            . '" title="' . htmlspecialchars($this->getLanguageService()->getLL('nextLevel')) . '">'
+                            . $this->iconFactory->getIcon('actions-move-right', Icon::SIZE_SMALL)->render() . '</a>';
+                    } else {
+                        $moveRightAction = $this->spaceIcon;
+                    }
+                } else {
+                    $moveRightAction = $this->spaceIcon;
+                }
+                $this->addActionToCellGroup($cells, $moveRightAction, 'moveRight');
+            }
+        }
+    }
 }
+
+
+
 
 
 
