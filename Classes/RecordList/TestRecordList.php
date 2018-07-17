@@ -46,7 +46,7 @@ class TestRecordList extends DatabaseRecordList {
     }
 
     /**
-     * @param PageRenderer
+     * @param PageRenderer $pageRenderer
      */
     public function injectPageRenderer(PageRenderer $pageRenderer) {
         $this->pageRenderer = $pageRenderer;
